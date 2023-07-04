@@ -10,7 +10,8 @@ public class State : MonoBehaviour
     private void Awake()
     {
         if (Instance == null)
-        {    
+        {
+            IsPlayerTurn = true;
             transform.parent = null;
             DontDestroyOnLoad(gameObject);
             Instance = this;
