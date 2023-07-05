@@ -19,23 +19,30 @@ public class EnemiesManager : MonoBehaviour
 
     IEnumerator EnemiesTurn()
     {
-        foreach(Enemy enemy in enemies)
+        for (int i = enemies.Count - 1; i >= 0; i--)
         {
+            
+            if (enemies[i].IsDead)
+            {
+                enemies.RemoveAt(i);
+            }
+            else
+            {
+                enemies[i].Move(player.transform);
+            }
             yield return new WaitForSeconds(turnWaitTime);
-
-            enemy.Move(player.transform);
         }
         State.Instance.IsPlayerTurn = true;
         onCooldown = false;
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (!State.Instance.IsPlayerTurn && !onCooldown)
+        // Update is called once per frame
+        void Update()
         {
-            StartCoroutine(EnemiesTurn());
-            onCooldown = true;
+            if (!State.Instance.IsPlayerTurn && !onCooldown)
+            {
+                StartCoroutine(EnemiesTurn());
+                player.currentTurn += 1;
+                onCooldown = true;
+            }
         }
-    }
 }

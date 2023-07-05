@@ -12,19 +12,19 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] float cooldown;
+    [SerializeField] public bool InSelect;
     float startTouchPostitionX;
     float endTouchPositionX;
     float startTouchPostitionY;
     float endTouchPositionY;
     bool onCooldown;
     Vector2 lastPos;
-    Vector2 targetPos;
+    public Vector2 targetPos;
     
     private void Start()
     {
         lastPos = player.position;
         targetPos = player.position;
-        onCooldown = false;
     }
 
     IEnumerator WaitForCooldown()
@@ -69,6 +69,9 @@ public class PlayerMove : MonoBehaviour
 
     void CheckSwipe()
     {
+        if (InSelect)
+            return;
+        
         if (Input.GetMouseButtonDown(0))
         {
             startTouchPostitionX = Input.mousePosition.x;
@@ -88,13 +91,21 @@ public class PlayerMove : MonoBehaviour
                     if (endTouchPositionX < startTouchPostitionX)
                     {
                         Move(-1, 0);
-                        spriteRenderer.flipX = true;
+                        if (!spriteRenderer.flipX)
+                        {
+                            spriteRenderer.flipX = true;
+                            spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x - 0.2f, spriteRenderer.transform.position.y);
+                        }
                     }
 
                     if (endTouchPositionX > startTouchPostitionX)
                     {
                         Move(1, 0);
-                        spriteRenderer.flipX = false;
+                        if (spriteRenderer.flipX)
+                        {
+                            spriteRenderer.flipX = false;
+                            spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x + 0.2f, spriteRenderer.transform.position.y);
+                        }
                     }
                 }
                 else

@@ -6,6 +6,7 @@ public class Player : MonoBehaviour
 {
     // Start is called before the first frame update
     [SerializeField] int health;
+    [SerializeField] public int currentTurn;
     void Start()
     {
         

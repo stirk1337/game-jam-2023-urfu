@@ -5,10 +5,11 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     // Start is called before the first frame update
-    [SerializeField] int health;
+    [SerializeField] public int health;
     [SerializeField] int attackRange;
     [SerializeField] int MoveSpeed;
     [SerializeField] float moveVelocity;
+    [SerializeField] public bool IsDead;
     Vector2 lastPos;
     Vector2 targetPos;
 
@@ -16,6 +17,7 @@ public class Enemy : MonoBehaviour
     {
         lastPos = transform.position;
         targetPos = transform.position;
+        IsDead = false;
     }
 
     public void Move(Transform target)
@@ -50,6 +52,13 @@ public class Enemy : MonoBehaviour
             }
         }
     }
+
+    public void Die()
+    {
+        Destroy(gameObject);
+        IsDead = true;
+    }
+
     void Update()
     {
         transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * moveVelocity);
