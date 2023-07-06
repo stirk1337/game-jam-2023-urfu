@@ -6,9 +6,8 @@ using UnityEngine;
 public class PlayerMove : MonoBehaviour
 {
     [SerializeField] Transform player;
-    [SerializeField] float speed;
+    [SerializeField] float speedField;
     [SerializeField] float SwipeDeadZone;
-    [SerializeField] float velocity;
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] float cooldown;
@@ -18,13 +17,17 @@ public class PlayerMove : MonoBehaviour
     float startTouchPostitionY;
     float endTouchPositionY;
     bool onCooldown;
-    Vector2 lastPos;
+    public Vector2 lastPos;
     public Vector2 targetPos;
-    
+    public float speed;
+
+
     private void Start()
     {
         lastPos = player.position;
-        targetPos = player.position;
+        //targetPos = player.position;
+        InSelect = false;
+        speed = speedField;
     }
 
     IEnumerator WaitForCooldown()
@@ -38,6 +41,7 @@ public class PlayerMove : MonoBehaviour
     {
         //player.position = new Vector3(player.position.x + x, player.position.y + y, 0);
         //player.position = Vector3.MoveTowards(player.position, new Vector2(player.position.x + x, player.position.y + y) , Time.deltaTime * velocity);
+        Debug.Log("i need to move!");
         lastPos = player.position;
         targetPos = new Vector2(player.position.x + x, player.position.y + y);
         animator.SetTrigger("Jump");
@@ -126,10 +130,10 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
-        player.position = Vector3.MoveTowards(player.position, targetPos, Time.deltaTime * velocity);
-
+        player.position = Vector3.MoveTowards(player.position, targetPos, Time.deltaTime * speed);
         if (State.Instance.IsPlayerTurn && !onCooldown)
         {
+            speed = speedField;
             CheckInput();
             CheckSwipe();
         }

@@ -5,8 +5,9 @@ using UnityEngine;
 
 public class EnemiesManager : MonoBehaviour
 {
-    [SerializeField] List<Enemy> enemies;
+    [SerializeField] public List<Enemy> enemies;
     [SerializeField] float turnWaitTime;
+    [SerializeField] float afterPlayerWait;
     bool onCooldown;
     Player player;
 
@@ -19,16 +20,17 @@ public class EnemiesManager : MonoBehaviour
 
     IEnumerator EnemiesTurn()
     {
+        yield return new WaitForSeconds(afterPlayerWait);
         for (int i = enemies.Count - 1; i >= 0; i--)
         {
             
             if (enemies[i].IsDead)
-            {
-                enemies.RemoveAt(i);
+            {        
+                enemies.RemoveAt(i);          
             }
             else
             {
-                enemies[i].Move(player.transform);
+                enemies[i].Turn(player.transform);
             }
             yield return new WaitForSeconds(turnWaitTime);
         }
