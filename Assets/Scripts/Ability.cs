@@ -6,6 +6,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
+using static Unity.VisualScripting.Member;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class Ability : MonoBehaviour
 {
@@ -22,12 +25,9 @@ public class Ability : MonoBehaviour
         Cooldown
     }
 
-    enum AbilityElement
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        Default,
-        Fire,
-        Electro,
-        Wind
+        fireDashEnemies.Add(collision.gameObject);
     }
 
     [SerializeField] int damage;
@@ -36,29 +36,33 @@ public class Ability : MonoBehaviour
     [SerializeField] int currentCooldown;
     [SerializeField] AbilityType abilityType;
     [SerializeField] public AbilityState abilityState;
-    [SerializeField] AbilityElement abilityElement;
     [SerializeField] Player player;
     [SerializeField] PlayerMove playerMove;
     [SerializeField] AbilitiesUIManager abilitiesUIManager;
     [SerializeField] GameObject buttonGameObject;
+    [SerializeField] DiceManager diceManager;
+    [SerializeField] BoxCollider2D boxCollider;
+    [SerializeField] BoxCollider2D abilityCollider;
     List<Enemy> enemies;
-
+    List<GameObject> fireDashEnemies;
+   
     Tilemap tilemap;
 
     void Start()
     {
         tilemap = FindObjectOfType<Tilemap>();
         enemies = FindObjectOfType<EnemiesManager>().enemies;
+        fireDashEnemies = new List<GameObject>();
     }
 
-    List<Vector2> FindAttackRangeDiamondShape(Vector2 playerPosition, int attackRange)
+    List<Vector2> FindAttackRangeDiamondShape(Vector2 position, int attackRange)
     {
         List<Vector2> attackPoints = new List<Vector2>();
-        for (int i = (int)playerPosition.x - attackRange; i <= (int)playerPosition.x + attackRange; i++)
+        for (int i = (int)position.x - attackRange; i <= (int)position.x + attackRange; i++)
         {
-            for (int j = (int)playerPosition.y - attackRange; j <= (int)playerPosition.y + attackRange; j++)
+            for (int j = (int)position.y - attackRange; j <= (int)position.y + attackRange; j++)
             {
-                if (Mathf.Abs(i - playerPosition.x) + Mathf.Abs(j - playerPosition.y) <= attackRange)
+                if (Mathf.Abs(i - position.x) + Mathf.Abs(j - position.y) <= attackRange)
                 {
                     attackPoints.Add(new Vector2(i, j));
                 }
@@ -67,14 +71,14 @@ public class Ability : MonoBehaviour
         return attackPoints;
     }
 
-    List<Vector2> FindAttackRangeForwardShape(Vector2 playerPosition, float attackRange)
+    List<Vector2> FindAttackRangeForwardShape(Vector2 position, float attackRange)
     {
         List<Vector2> attackPoints = new List<Vector2>();
-        for (float i = playerPosition.x - attackRange; i <= playerPosition.x + attackRange; i += 0.5f)
+        for (float i = position.x - attackRange; i <= position.x + attackRange; i += 0.5f)
         {
-            for (float j = playerPosition.y - attackRange; j <= playerPosition.y + attackRange; j += 0.5f)
+            for (float j = position.y - attackRange; j <= position.y + attackRange; j += 0.5f)
             {
-                if (new Vector2(i, j) != playerPosition && (i == playerPosition.x || j == playerPosition.y))
+                if (new Vector2(i, j) != position && (i == position.x || j == position.y))
                 {
                     attackPoints.Add(new Vector2(i, j));
                 }
@@ -82,18 +86,76 @@ public class Ability : MonoBehaviour
         }
         return attackPoints;
     }
+
+    List<Vector2> FindAttackRangeSquareShape(Vector2 position, float attackRange)
+    {
+        List<Vector2> attackPoints = new List<Vector2>();
+
+        int x = Mathf.RoundToInt(position.x);
+        int y = Mathf.RoundToInt(position.y);
+        int range = Mathf.RoundToInt(attackRange);
+
+        for (int i = x - range; i <= x + range; i++)
+        {
+            for (int j = y - range; j <= y + range; j++)
+            {
+                if (i != x || j != y)
+                {
+                    attackPoints.Add(new Vector2(i, j));
+                }
+            }
+        }
+
+        return attackPoints;
+    }
+
 
 
     void DisplayAttackRange(Color color, AbilityType abilityType)
     {
         List<Vector2> attackPoints = new List<Vector2>();
-        if (abilityType == AbilityType.Melee || abilityType == AbilityType.Splash)
+        int currentRange = range;
+
+        if (abilityType == AbilityType.Melee)
         {
-            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), range);
+            currentRange = range;
+            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
         }
-        else if (abilityType == AbilityType.Dash)
+
+        if (abilityType == AbilityType.Splash && player.abilityElement == Player.AbilityElement.Default)
         {
-            attackPoints = FindAttackRangeForwardShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), range);
+            currentRange = range;
+            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
+        }
+
+        if (abilityType == AbilityType.Splash && player.abilityElement == Player.AbilityElement.Fire)
+        {
+            currentRange = range + 1;
+            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
+        }
+
+        if (abilityType == AbilityType.Splash && player.abilityElement == Player.AbilityElement.Electro)
+        {
+            currentRange = range;
+            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
+        }
+
+        if (abilityType == AbilityType.Splash && player.abilityElement == Player.AbilityElement.Wind)
+        {
+            currentRange = 1;
+            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
+        }
+
+        if (abilityType == AbilityType.Dash && player.abilityElement == Player.AbilityElement.Default)
+        {
+            currentRange = range;
+            attackPoints = FindAttackRangeForwardShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
+        }
+
+        if (abilityType == AbilityType.Dash && player.abilityElement == Player.AbilityElement.Fire)
+        {
+            currentRange = range;
+            attackPoints = FindAttackRangeForwardShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
         }
 
         foreach (Vector2 point in attackPoints)
@@ -126,12 +188,19 @@ public class Ability : MonoBehaviour
 
     }
 
+    IEnumerator waiter(float time)
+    {
+        yield return new WaitForSeconds(time);
+    }
+
     void HandleCooldown()
     {
         Select();
+        player.abilityElement = Player.AbilityElement.Default;
         abilityState = AbilityState.Cooldown;
         currentCooldown = player.currentTurn + cooldown;
         State.Instance.IsPlayerTurn = false;
+        tilemap.color = Color.white;
     }
 
     float ManhattanDistance(Vector3 a, Vector3 b)
@@ -142,8 +211,100 @@ public class Ability : MonoBehaviour
         }
     }
 
+    Tuple<int, DiceManager.DiceState> CalculateDamage(DiceManager.DiceState diceState)
+    {
+        int diceDamage = damage;
+
+        if (abilityType == AbilityType.Splash && player.abilityElement == Player.AbilityElement.Fire)
+        {
+            diceDamage += 5;
+        }
+
+        switch (diceState)
+        {
+            case DiceManager.DiceState.Crit:
+                diceDamage *= 2;
+                break;
+
+            case DiceManager.DiceState.Miss:
+                diceDamage = 0;
+                break;
+        }
+        return Tuple.Create(diceDamage, diceState);
+    }
+
+    Tuple<int, DiceManager.DiceState> ThrowDice()
+    {
+        int random = UnityEngine.Random.Range(0, 5);
+        DiceManager.DiceState diceState = DiceManager.DiceState.Hit;
+        switch (player.diceElement)
+        {
+            case Player.DiceElement.Default:
+                diceState = diceManager.defaultDice[random];
+                break;
+            case Player.DiceElement.Fire:
+                diceState = diceManager.fireDice[random];
+                break;
+            case Player.DiceElement.Electro:
+                diceState = diceManager.electroDice[random];
+                break;
+            case Player.DiceElement.Wind:
+                diceState = diceManager.windDice[random];
+                break;
+        }
+        return CalculateDamage(diceState);
+    }
+
+
+    void SplashAttack()
+    {
+        foreach (Enemy enemy in enemies)
+        {
+            float distance = ManhattanDistance(player.transform.position, enemy.transform.position);
+
+            if (distance <= range + 0.1)
+            {
+                enemy.TakeDamage(ThrowDice());
+            }
+        }
+    }
+
+    IEnumerator ElectroSplash(float time)
+    {
+        
+        yield return new WaitForSeconds(time);
+        Select();
+        yield return new WaitForSeconds(time);
+        SplashAttack();
+        HandleCooldown();
+        boxCollider.enabled = true;
+    }
+
+    IEnumerator WindSplash(float time)
+    {
+        yield return new WaitForSeconds(time);
+        HandleCooldown();
+    }
+
+    IEnumerator FireDash(float time)
+    {
+        yield return new WaitForSeconds(time);
+        foreach (GameObject fireDash in fireDashEnemies)
+        {
+            if (fireDash.tag == "Enemy")
+            {
+                Enemy enemy = fireDash.GetComponent<Enemy>();
+                enemy.TakeDamage(ThrowDice());
+            }
+        }
+        fireDashEnemies.Clear();
+        abilityCollider.enabled = false;
+        boxCollider.enabled = true;
+    }
+
     void Activate(GameObject gameObj, Vector2 mouseHit)
     {
+        Vector2 cell = new Vector2();
         if (State.Instance.IsPlayerTurn)
         {
             switch (abilityType)
@@ -151,71 +312,127 @@ public class Ability : MonoBehaviour
                 case AbilityType.Melee:
                     float distance = ManhattanDistance(player.transform.position, gameObj.transform.position);
                     Debug.Log(distance);
+
                     if (gameObj.tag == "Enemy" && distance <= range + 0.1)
                     {
                         HandleCooldown();
                         Enemy enemy = gameObj.GetComponent<Enemy>();
-                        enemy.TakeDamage(damage);
+                        enemy.TakeDamage(ThrowDice());
                     }
                     break;
 
                 case AbilityType.Splash:
-                    if (gameObj.tag == "Player")
+                    if (player.abilityElement == Player.AbilityElement.Default)
                     {
-                        HandleCooldown();
+                        if (gameObj.tag == "Player" || gameObj.tag == "Tile")
+                        {
+                            SplashAttack();
+                            HandleCooldown();
+                        }
+                    }
+
+                    if (player.abilityElement == Player.AbilityElement.Electro)
+                    {
+                        cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
+                        distance = ManhattanDistance(player.transform.position, cell);
+                        if (gameObj.tag == "Tile" && distance <= range + 0.1)
+                        {
+                            Select();
+                            boxCollider.enabled = false;
+                            playerMove.lastPos = player.transform.position;
+                            playerMove.speed = 10;
+                            playerMove.targetPos = cell;
+                        }
+                        StartCoroutine(ElectroSplash(0.5f));
+                    }
+
+                    if (player.abilityElement == Player.AbilityElement.Wind)
+                    {
                         foreach (Enemy enemy in enemies)
                         {
                             distance = ManhattanDistance(player.transform.position, enemy.transform.position);
-                            Debug.Log("Splash distance: " + distance.ToString() + " to: " + enemy.transform.name);
-                            if (distance <= range + 0.1)
+
+                            if (distance <= 1 + 0.1)
                             {
-                                enemy.TakeDamage(damage);
+                                float force = 6f;
+                                float offsetX = Mathf.Abs(enemy.transform.position.x - player.transform.position.x);
+                                float offsetY = Mathf.Abs(enemy.transform.position.y - player.transform.position.y);
+                                float totalForce = force / (offsetX + offsetY + 1f);
+                                Vector3 direction = (enemy.transform.position - player.transform.position).normalized;
+                                Vector3 newCoords = enemy.transform.position + direction * totalForce;
+                                enemy.speed = 10;
+                                enemy.lastPos = enemy.transform.position;
+                                enemy.targetPos = newCoords;
+                                StartCoroutine(WindSplash(1f));
                             }
                         }
                     }
                     break;
 
                 case AbilityType.Dash:
-                    Vector2 cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
-                    distance = ManhattanDistance(player.transform.position, cell);
-                    if (gameObj.tag == "Tile" && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                    if (player.abilityElement == Player.AbilityElement.Default)
                     {
-                        HandleCooldown();
-                        playerMove.lastPos = player.transform.position;
-                        playerMove.speed = 10;
-                        playerMove.targetPos = cell;
+                        cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
+                        distance = ManhattanDistance(player.transform.position, cell);
+                        if (gameObj.tag == "Tile" && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                        {
+                            HandleCooldown();
+                            playerMove.lastPos = player.transform.position;
+                            playerMove.speed = 10;
+                            playerMove.targetPos = cell;
+                        }
+                    }
+                    if (player.abilityElement == Player.AbilityElement.Fire)
+                    {
+                        boxCollider.enabled = false;
+                        cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
+                        distance = ManhattanDistance(player.transform.position, cell);
+                        if (gameObj.tag == "Tile" && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                        {
+                            HandleCooldown();
+                            abilityCollider.enabled = true;
+                            playerMove.lastPos = player.transform.position;
+                            playerMove.speed = 10;
+                            playerMove.targetPos = cell;
+                            StartCoroutine(FireDash(0.5f));
+                        }
+                        
                     }
 
                     break;
             }
-        
+
+        }
     }
-}
 
 
-// Update is called once per frame
-void Update()
-{
-
-    if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject())
+    void Update()
     {
-        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-        Vector2 mouseHit = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (hit.transform != null)
+
+        if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject())
         {
-            Debug.Log("Selected object: " + hit.transform.name);
+            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            Vector2 mouseHit = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (abilityState == AbilityState.Active)
             {
-                Debug.Log(hit.transform.gameObject);
-                Activate(hit.transform.gameObject, mouseHit);
+                {
+                    if (hit.transform != null)
+                    {
+                        Activate(hit.transform.gameObject, mouseHit);
+                        Debug.Log(hit.transform.gameObject);
+                    }
+                    else
+                    {
+                        Activate(tilemap.transform.gameObject, mouseHit);
+                        Debug.Log("Tilemap");
+                    }
+                }
             }
         }
 
+        if (abilityState == AbilityState.Cooldown && player.currentTurn == currentCooldown)
+        {
+            abilityState = AbilityState.Ready;
+        }
     }
-
-    if (abilityState == AbilityState.Cooldown && player.currentTurn == currentCooldown)
-    {
-        abilityState = AbilityState.Ready;
-    }
-}
 }

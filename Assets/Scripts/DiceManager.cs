@@ -6,15 +6,13 @@ using UnityEngine;
 
 public class DiceManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-
     public enum DiceState
     {
         Hit,
         Miss,
         Crit,
-        ElectroHit,
-        WindHit
+        Electro,
+        Wind
     }
 
     [SerializeField] Player player;
@@ -34,8 +32,8 @@ public class DiceManager : MonoBehaviour
     {
         defaultDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Miss, DiceState.Miss };
         fireDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Crit, DiceState.Miss };
-        electroDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.ElectroHit, DiceState.ElectroHit };
-        windDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.WindHit, DiceState.WindHit };
+        electroDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Electro, DiceState.Electro };
+        windDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Wind, DiceState.Wind };
     }
 
     // Update is called once per frame

@@ -8,14 +8,38 @@ public class EnemiesManager : MonoBehaviour
     [SerializeField] public List<Enemy> enemies;
     [SerializeField] float turnWaitTime;
     [SerializeField] float afterPlayerWait;
+    [SerializeField] int spawnSwordCount;
+    [SerializeField] GameObject enemyPrefab;
+    [SerializeField] int minSpawnDistance;
+    [SerializeField] int maxSpawnDistance;
     bool onCooldown;
     Player player;
+
 
     void Start()
     {
         onCooldown = false;
         player = FindObjectOfType<Player>();
 
+    }
+
+    Vector2 GetRandomSpawnPoint()
+    {
+        Vector2 playerPosition = player.transform.position;
+
+        int offsetX = Random.Range(minSpawnDistance, maxSpawnDistance + 1) * (Random.value < 0.5f ? -1 : 1);
+        int offsetY = Random.Range(minSpawnDistance, maxSpawnDistance + 1) * (Random.value < 0.5f ? -1 : 1);
+
+        return playerPosition + new Vector2(offsetX, offsetY);
+    }
+
+    public void Spawn(Enemy.EnemyType enemyType)
+    {  
+        GameObject gameObj = Instantiate(enemyPrefab, GetRandomSpawnPoint(), transform.rotation);
+        Enemy enemy = gameObj.GetComponent<Enemy>();
+        enemy.enemyType = enemyType;
+        enemy.Init();
+        enemies.Add(enemy);
     }
 
     IEnumerator EnemiesTurn()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,7 @@ using static Ability;
 
 public class Enemy : MonoBehaviour
 {
-    enum EnemyState
+    public enum EnemyState
     {
         Default,
         Fire,
@@ -13,7 +14,7 @@ public class Enemy : MonoBehaviour
         Wind
     }
 
-    enum EnemyType
+    public enum EnemyType
     {
         Sword,
         Mage,
@@ -25,25 +26,70 @@ public class Enemy : MonoBehaviour
     [SerializeField] public int health;
     [SerializeField] int damage;
     [SerializeField] int range;
-    [SerializeField] int MoveSpeed;
-    [SerializeField] float moveVelocity;
+    [SerializeField] float speedField;
+    [SerializeField] public float speed;
     [SerializeField] public bool IsDead;
-    [SerializeField] EnemyState enemyState;
-    [SerializeField] EnemyType enemyType;
-    Vector2 lastPos;
-    Vector2 targetPos;
+    [SerializeField] public EnemyState enemyState;
+    [SerializeField] public EnemyType enemyType;
+    [SerializeField] GameObject enemyPrefab;
+    [SerializeField] int swordDamage;
+    [SerializeField] int swordHealth;
+    [SerializeField] int swordRange;
+    [SerializeField] int swordMoveSpeed;
+    public Vector2 lastPos;
+    public Vector2 targetPos;
 
-    void Start()
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Enemy")
+        {
+            //Debug.Log("enemy collision");
+            if (speed >= 10)
+            {
+                if (Mathf.Abs(lastPos.x - targetPos.x) < Mathf.Abs(lastPos.y - targetPos.y))
+                {
+                    int offset = targetPos.y - lastPos.y > 0 ? 1 : -1;
+                    Enemy collisionEnemy = collision.gameObject.GetComponent<Enemy>();
+                    collisionEnemy.lastPos = collisionEnemy.transform.position;
+                    collisionEnemy.targetPos = new Vector2(targetPos.x, targetPos.y + offset);
+                    collisionEnemy.speed = speed + 10;
+                }
+                else
+                {
+                    int offset = targetPos.x - lastPos.x > 0 ? 1 : -1;
+                    Enemy collisionEnemy = collision.gameObject.GetComponent<Enemy>();
+                    collisionEnemy.lastPos = collisionEnemy.transform.position;
+                    collisionEnemy.targetPos = new Vector2(targetPos.x + offset, targetPos.y);
+                    collisionEnemy.speed = speed + 10;
+                }
+            }
+            else
+            {
+                targetPos = new Vector2(MathF.Floor(transform.position.x) + 0.5f, MathF.Floor(transform.position.y) + 0.5f);
+            }
+        }
+    }
+
+    public void Init()
     {
         lastPos = transform.position;
         targetPos = transform.position;
         IsDead = false;
+        speed = speedField;
+        switch (enemyType)
+        {
+            case EnemyType.Sword:
+                damage = swordDamage;
+                health = swordHealth;
+                range = swordRange;
+                break;
+        }
     }
 
     bool inRange(Transform target)
     {
         float distance = Vector2.Distance(gameObject.transform.position, target.position);
-        Debug.Log(distance);
+        //Debug.Log(distance);
         return distance <= range + 0.1;
     }
 
@@ -59,6 +105,7 @@ public class Enemy : MonoBehaviour
 
     public void Turn(Transform target)
     {
+        speed = speedField;
         switch (enemyType)
         {
             case EnemyType.Sword:
@@ -92,7 +139,7 @@ public class Enemy : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(target, Vector2.zero);
         if (hit.transform != null && hit.transform.gameObject.tag == "Enemy")
         {
-            Debug.Log("Selected object: " + hit.transform.name + " From: " + gameObject.transform.name);
+            //Debug.Log("Selected object: " + hit.transform.name + " From: " + gameObject.transform.name);
             return true;
         }
         return false;
@@ -142,9 +189,18 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(Tuple<int, DiceManager.DiceState> tuple)
     {
-        health -= damage;
+        health -= tuple.Item1;
+        switch (tuple.Item2)
+        {
+            case DiceManager.DiceState.Electro:
+                enemyState = EnemyState.Electro;
+                break;
+            case DiceManager.DiceState.Wind:
+                enemyState = EnemyState.Wind;
+                break;
+        }
         if (health <= 0)
             Die();
     }
@@ -157,6 +213,6 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * moveVelocity);
+        transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
     }
 }

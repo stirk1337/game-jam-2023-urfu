@@ -41,7 +41,7 @@ public class PlayerMove : MonoBehaviour
     {
         //player.position = new Vector3(player.position.x + x, player.position.y + y, 0);
         //player.position = Vector3.MoveTowards(player.position, new Vector2(player.position.x + x, player.position.y + y) , Time.deltaTime * velocity);
-        Debug.Log("i need to move!");
+        //Debug.Log("i need to move!");
         lastPos = player.position;
         targetPos = new Vector2(player.position.x + x, player.position.y + y);
         animator.SetTrigger("Jump");
