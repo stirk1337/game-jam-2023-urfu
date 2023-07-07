@@ -29,13 +29,14 @@ public class Enemy : MonoBehaviour
     [SerializeField] float speedField;
     [SerializeField] public float speed;
     [SerializeField] public bool IsDead;
-    [SerializeField] public EnemyState enemyState;
     [SerializeField] public EnemyType enemyType;
     [SerializeField] GameObject enemyPrefab;
     [SerializeField] int swordDamage;
     [SerializeField] int swordHealth;
     [SerializeField] int swordRange;
     [SerializeField] int swordMoveSpeed;
+    [SerializeField] public Dictionary<EnemyState, int> enemyState;
+
     public Vector2 lastPos;
     public Vector2 targetPos;
 
@@ -72,6 +73,13 @@ public class Enemy : MonoBehaviour
 
     public void Init()
     {
+        enemyState = new Dictionary<EnemyState, int>()
+        {
+            [EnemyState.Electro] = 0,
+            [EnemyState.Fire] = 0,
+            [EnemyState.Wind] = 0,
+            [EnemyState.Default] = 0,
+        };
         lastPos = transform.position;
         targetPos = transform.position;
         IsDead = false;
@@ -189,16 +197,24 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TakeDamage(Tuple<int, DiceManager.DiceState> tuple)
+    public void TakeDamageWithoutCube()
+    {
+        health -= damage;
+        if (health <= 0)
+            Die();
+    }
+
+    public void TakeDamageWithCube(Tuple<int, DiceManager.DiceState> tuple)
     {
         health -= tuple.Item1;
+        Debug.Log(tuple.Item1 + tuple.Item2.ToString());
         switch (tuple.Item2)
         {
             case DiceManager.DiceState.Electro:
-                enemyState = EnemyState.Electro;
+                enemyState[EnemyState.Electro] = 5;
                 break;
             case DiceManager.DiceState.Wind:
-                enemyState = EnemyState.Wind;
+                State.Instance.FreeMove = true;          
                 break;
         }
         if (health <= 0)
@@ -213,6 +229,11 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        foreach(var state in enemyState)
+        {
+            if (state.Value != 0)
+                Debug.Log(state.Key.ToString() + state.Value.ToString());
+        }
         transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
     }
 }

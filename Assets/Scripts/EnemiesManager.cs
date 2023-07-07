@@ -45,21 +45,31 @@ public class EnemiesManager : MonoBehaviour
     IEnumerator EnemiesTurn()
     {
         yield return new WaitForSeconds(afterPlayerWait);
-        for (int i = enemies.Count - 1; i >= 0; i--)
+        if (!State.Instance.FreeMove)
         {
-            
-            if (enemies[i].IsDead)
-            {        
-                enemies.RemoveAt(i);          
-            }
-            else
+            for (int i = enemies.Count - 1; i >= 0; i--)
             {
-                enemies[i].Turn(player.transform);
+
+                if (enemies[i].IsDead)
+                {
+                    enemies.RemoveAt(i);
+                }
+                else
+                {
+                    enemies[i].Turn(player.transform);
+                }
+                yield return new WaitForSeconds(turnWaitTime);
             }
-            yield return new WaitForSeconds(turnWaitTime);
+
+            State.Instance.IsPlayerTurn = true;
+            onCooldown = false;
         }
-        State.Instance.IsPlayerTurn = true;
-        onCooldown = false;
+        else
+        {
+            State.Instance.FreeMove = false;
+            State.Instance.IsPlayerTurn = true;
+            onCooldown = false;
+        }
     }
         // Update is called once per frame
         void Update()
