@@ -32,6 +32,7 @@ public class RuneManager : MonoBehaviour
     void Collect()
     {
         player.abilityElement = runeElement;
+        player.currentDices[runeElement].SetActive(true);
         currentCooldown = player.currentTurn + cooldown;
         runeState = RuneState.Cooldown;
         sprite.color = new Color(1f, 1f, 1f, 0f);

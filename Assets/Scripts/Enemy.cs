@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using static Ability;
 
 public class Enemy : MonoBehaviour
 {
-    public enum EnemyState
+    public enum ElementState
     {
         Default,
         Fire,
@@ -24,18 +26,26 @@ public class Enemy : MonoBehaviour
     }
 
     [SerializeField] public int health;
-    [SerializeField] int damage;
-    [SerializeField] int range;
+    [SerializeField] public int shield;
+    [SerializeField] public int damage;
+    [SerializeField] public int range;
+    [SerializeField] public int MoveSpeed;
     [SerializeField] float speedField;
     [SerializeField] public float speed;
     [SerializeField] public bool IsDead;
     [SerializeField] public EnemyType enemyType;
     [SerializeField] GameObject enemyPrefab;
-    [SerializeField] int swordDamage;
-    [SerializeField] int swordHealth;
-    [SerializeField] int swordRange;
-    [SerializeField] int swordMoveSpeed;
-    [SerializeField] public Dictionary<EnemyState, int> enemyState;
+    [SerializeField] public Dictionary<ElementState, int> elementState;
+    [SerializeField] public float distanceToPlayer;
+    [SerializeField] TextMeshProUGUI healthText;
+    [SerializeField] GameObject fireImage;
+    [SerializeField] GameObject electroImage;
+    [SerializeField] GameObject windImage;
+    [SerializeField] Player.AbilityElement diceElement;
+    [SerializeField] Animator animator;
+    [SerializeField] SpriteRenderer spriteRenderer;
+    Player player;
+    DiceManager diceManager;
 
     public Vector2 lastPos;
     public Vector2 targetPos;
@@ -71,14 +81,40 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    void UpdateVisual()
+    {
+        healthText.text = health.ToString();
+        var stateImages = new Dictionary<ElementState, GameObject>()
+        {
+            [ElementState.Fire] = fireImage,
+            [ElementState.Electro] = electroImage,
+            [ElementState.Wind] = windImage,
+        };
+        foreach (var state in elementState)
+        {
+            if (state.Key == ElementState.Default)
+                continue;
+            if (state.Value > 0)
+            {
+                stateImages[state.Key].SetActive(true);
+            }
+            else
+            {
+                stateImages[state.Key].SetActive(false);
+            }
+        }
+    }
+
     public void Init()
     {
-        enemyState = new Dictionary<EnemyState, int>()
+        player = FindObjectOfType<Player>();
+        diceManager = FindAnyObjectByType<DiceManager>();
+        elementState = new Dictionary<ElementState, int>()
         {
-            [EnemyState.Electro] = 0,
-            [EnemyState.Fire] = 0,
-            [EnemyState.Wind] = 0,
-            [EnemyState.Default] = 0,
+            [ElementState.Electro] = 0,
+            [ElementState.Fire] = 0,
+            [ElementState.Wind] = 0,
+            [ElementState.Default] = 0,
         };
         lastPos = transform.position;
         targetPos = transform.position;
@@ -87,9 +123,7 @@ public class Enemy : MonoBehaviour
         switch (enemyType)
         {
             case EnemyType.Sword:
-                damage = swordDamage;
-                health = swordHealth;
-                range = swordRange;
+                
                 break;
         }
     }
@@ -101,15 +135,52 @@ public class Enemy : MonoBehaviour
         return distance <= range + 0.1;
     }
 
-    void AutoAttack(Transform target)
+    void Attack(Transform target)
     {
         Player player = target.gameObject.GetComponent<Player>();
-        player.health -= damage;
-        if (player.health <= 0)
-        {
-            player.Die();
-        }
+        animator.SetTrigger("Attack");
+        player.TakeDamageWithCube(ThrowDice());
     }
+
+    Tuple<int, DiceManager.DiceState> CalculateDamage(DiceManager.DiceState diceState)
+    {
+        int diceDamage = damage;
+
+        switch (diceState)
+        {
+            case DiceManager.DiceState.Crit:
+                diceDamage *= 2;
+                break;
+
+            case DiceManager.DiceState.Miss:
+                diceDamage = 0;
+                break;
+        }
+        return Tuple.Create(diceDamage, diceState);
+    }
+
+    Tuple<int, DiceManager.DiceState> ThrowDice()
+    {
+        int random = UnityEngine.Random.Range(0, 5);
+        DiceManager.DiceState diceState = DiceManager.DiceState.Hit;
+        switch (diceElement)
+        {
+            case Player.AbilityElement.Default:
+                diceState = diceManager.defaultDice[random];
+                break;
+            case Player.AbilityElement.Fire:
+                diceState = diceManager.fireDice[random];
+                break;
+            case Player.AbilityElement.Electro:
+                diceState = diceManager.electroDice[random];
+                break;
+            case Player.AbilityElement.Wind:
+                diceState = diceManager.windDice[random];
+                break;
+        }
+        return CalculateDamage(diceState);
+    }
+
 
     public void Turn(Transform target)
     {
@@ -119,7 +190,7 @@ public class Enemy : MonoBehaviour
             case EnemyType.Sword:
                 if (inRange(target))
                 {
-                    AutoAttack(target);
+                    Attack(target);
                 }
                 else
                 {
@@ -139,6 +210,11 @@ public class Enemy : MonoBehaviour
 
             case EnemyType.ElectroMage:
                 break;
+        }
+        foreach (var key in elementState.Keys.ToList())
+        {
+            if (elementState[key] > 0)
+                elementState[key] = elementState[key] - 1;
         }
     }
 
@@ -161,6 +237,11 @@ public class Enemy : MonoBehaviour
         if (!IsCollision(moveTo))
         {
             targetPos = moveTo;
+            if (x == -1)
+                spriteRenderer.flipX = true;
+            if (x == 1)
+                spriteRenderer.flipX = false;
+            //spriteRenderer.flipX = true;
             return false;
         }
         return true;
@@ -171,8 +252,9 @@ public class Enemy : MonoBehaviour
         float moveX = target.position.x - transform.position.x;
         float moveY = target.position.y - transform.position.y;
         bool cantMove = false;
- 
-        
+
+
+        Debug.Log(moveX.ToString() + "  " + moveY.ToString());
         if (Mathf.Abs(moveX) > Mathf.Abs(moveY))
         {
             if (moveX > 0)
@@ -184,7 +266,7 @@ public class Enemy : MonoBehaviour
                 cantMove = TryToMove(-1, 0);
             }
         }
-        if (Mathf.Abs(moveX) <= Mathf.Abs(moveY) || cantMove)
+        if (Mathf.Abs(moveX) < Mathf.Abs(moveY) || cantMove)
         {
             if (moveY > 0)
             {
@@ -195,11 +277,38 @@ public class Enemy : MonoBehaviour
                 cantMove = TryToMove(0, -1);
             }
         }
+        if (Math.Abs(moveX) == Math.Abs(moveY) || cantMove)
+        {
+            Debug.Log("xd");
+            char path = "xy"[UnityEngine.Random.Range(0, 1)];
+            if (path == 'x')
+            {
+                if (moveX > 0)
+                {
+                    cantMove = TryToMove(1, 0);
+                }
+                else
+                {
+                    cantMove = TryToMove(-1, 0);
+                }
+            }
+            if (path == 'y' || cantMove)
+            {
+                if (moveY > 0)
+                {
+                    cantMove = TryToMove(0, 1);
+                }
+                else
+                {
+                    cantMove = TryToMove(0, -1);
+                }
+            }
+        }
     }
 
-    public void TakeDamageWithoutCube()
+    public void TakeDamageWithoutCube(int dmg)
     {
-        health -= damage;
+        health -= dmg;
         if (health <= 0)
             Die();
     }
@@ -211,7 +320,7 @@ public class Enemy : MonoBehaviour
         switch (tuple.Item2)
         {
             case DiceManager.DiceState.Electro:
-                enemyState[EnemyState.Electro] = 5;
+                elementState[ElementState.Electro] = 5;
                 break;
             case DiceManager.DiceState.Wind:
                 State.Instance.FreeMove = true;          
@@ -227,13 +336,23 @@ public class Enemy : MonoBehaviour
         IsDead = true;
     }
 
+    float ManhattanDistance(Vector3 a, Vector3 b)
+    {
+        checked
+        {
+            return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y) + Mathf.Abs(a.z - b.z);
+        }
+    }
+
     void Update()
     {
-        foreach(var state in enemyState)
+        UpdateVisual();
+        foreach(var state in elementState)
         {
             if (state.Value != 0)
                 Debug.Log(state.Key.ToString() + state.Value.ToString());
         }
         transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
+        distanceToPlayer = ManhattanDistance(player.transform.position, transform.position);
     }
 }

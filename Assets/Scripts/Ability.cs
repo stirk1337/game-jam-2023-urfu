@@ -8,10 +8,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Experimental.AI;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
-using static Enemy;
-using static Unity.VisualScripting.Member;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
-using static UnityEngine.EventSystems.EventTrigger;
+using UnityEngine.UI;
 
 public class Ability : MonoBehaviour
 {
@@ -20,7 +17,8 @@ public class Ability : MonoBehaviour
         Melee,
         Splash,
         Dash,
-        Range
+        Range,
+        Skip
     }
     public enum AbilityState
     {
@@ -48,7 +46,7 @@ public class Ability : MonoBehaviour
     [SerializeField] BoxCollider2D boxCollider;
     [SerializeField] BoxCollider2D abilityCollider;
     [SerializeField] int abilityStateCooldown;
-    List<Enemy> enemies;
+    EnemiesManager enemiesManager;
     List<GameObject> DashEnemies;
    
     Tilemap tilemap;
@@ -56,7 +54,7 @@ public class Ability : MonoBehaviour
     void Start()
     {
         tilemap = FindObjectOfType<Tilemap>();
-        enemies = FindObjectOfType<EnemiesManager>().enemies;
+        enemiesManager = FindObjectOfType<EnemiesManager>();
         DashEnemies = new List<GameObject>();
     }
 
@@ -120,10 +118,10 @@ public class Ability : MonoBehaviour
     {
         List<Vector2> attackPoints = new List<Vector2>();
         int currentRange = range;
-        List<Vector2> middlePoints = new List<Vector2>() { player.transform.position };
+        List<Vector2> middlePoints = new List<Vector2>() { new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f) };
         if (abilityType == AbilityType.Melee)
         {
-            currentRange = range;
+            currentRange = player.range;
             attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
         }
 
@@ -192,6 +190,12 @@ public class Ability : MonoBehaviour
             }
         }
 
+        if (abilityType == AbilityType.Range && player.abilityElement == Player.AbilityElement.Wind)
+        {
+            currentRange = range + 4;
+            attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
+        }
+
 
         foreach (Vector2 point in attackPoints)
         {
@@ -228,6 +232,12 @@ public class Ability : MonoBehaviour
                 break;
         }
 
+    }
+
+    public void SkipTurn()
+    {
+        State.Instance.IsPlayerTurn = false;
+        tilemap.color = UnityEngine.Color.white;
     }
 
     void HandleCooldown()
@@ -276,47 +286,56 @@ public class Ability : MonoBehaviour
         DiceManager.DiceState diceState = DiceManager.DiceState.Hit;
         switch (player.diceElement)
         {
-            case Player.DiceElement.Default:
+            case Player.AbilityElement.Default:
                 diceState = diceManager.defaultDice[random];
                 break;
-            case Player.DiceElement.Fire:
+            case Player.AbilityElement.Fire:
                 diceState = diceManager.fireDice[random];
                 break;
-            case Player.DiceElement.Electro:
+            case Player.AbilityElement.Electro:
                 diceState = diceManager.electroDice[random];
                 break;
-            case Player.DiceElement.Wind:
+            case Player.AbilityElement.Wind:
                 diceState = diceManager.windDice[random];
                 break;
         }
+        if (player.diceElement != Player.AbilityElement.Default)
+        {
+            player.currentDices[player.diceElement].SetActive(false);
+        }
+        player.diceElement = Player.AbilityElement.Default;
         return CalculateDamage(diceState);
     }
 
 
-    void SplashAttack(Vector2 position, Enemy.EnemyState enemyState)
+    void SplashAttack(Vector2 position, Enemy.ElementState enemyState)
     {
-        foreach (Enemy enemy in enemies)
+        foreach (Enemy enemy in enemiesManager.enemies)
         {
+
             float distance = ManhattanDistance(position, enemy.transform.position);
 
             if (distance <= range + 0.1)
             {
-                enemy.enemyState[enemyState] = abilityStateCooldown;
-                enemy.TakeDamageWithoutCube();
+                enemy.elementState[enemyState] = abilityStateCooldown;
+                enemy.TakeDamageWithoutCube(damage);
             }
         }
     }
 
-    void RangeSplashAttack(Vector2 position, Enemy.EnemyState enemyState)
+    void RangeSplashAttack(Vector2 position, Enemy.ElementState enemyState)
     {
-        foreach (Enemy enemy in enemies)
+        foreach (Enemy enemy in enemiesManager.enemies)
         {
+            if (enemy.IsDead)
+                continue;
+
             float distance = Vector2.Distance(position, enemy.transform.position);
             Debug.Log(distance);
             if (distance <= range + 0.1 + 0.5)
             {
-                enemy.enemyState[enemyState] = abilityStateCooldown;
-                enemy.TakeDamageWithoutCube();
+                enemy.elementState[enemyState] = abilityStateCooldown;
+                enemy.TakeDamageWithoutCube(damage);
             }
         }
     }
@@ -327,8 +346,13 @@ public class Ability : MonoBehaviour
         yield return new WaitForSeconds(time);
         Select();
         yield return new WaitForSeconds(time);
-        SplashAttack(player.transform.position, Enemy.EnemyState.Default);
+        SplashAttack(player.transform.position, Enemy.ElementState.Default);
         HandleCooldown();
+        foreach (GameObject bu in abilitiesUIManager.buttons)
+        {
+            var button = bu.GetComponent<UnityEngine.UI.Button>();
+            button.interactable = true;
+        }
         boxCollider.enabled = true;
     }
 
@@ -346,7 +370,7 @@ public class Ability : MonoBehaviour
             if (fireDash.tag == "Enemy")
             {
                 Enemy enemy = fireDash.GetComponent<Enemy>();
-                enemy.TakeDamageWithoutCube();
+                enemy.TakeDamageWithoutCube(damage);
             }
         }
         DashEnemies.Clear();
@@ -368,7 +392,7 @@ public class Ability : MonoBehaviour
             if (windDash.tag == "Enemy")
             {
                 Enemy enemy = windDash.GetComponent<Enemy>();
-                enemy.enemyState[EnemyState.Wind] = abilityStateCooldown;
+                enemy.elementState[Enemy.ElementState.Wind] = abilityStateCooldown;
             }
         }
         abilityCollider.enabled = false;
@@ -384,11 +408,15 @@ public class Ability : MonoBehaviour
         {
             switch (abilityType)
             {
+                case AbilityType.Skip:
+                    SkipTurn();
+                    break;
+                
                 case AbilityType.Melee:
                     float distance = ManhattanDistance(player.transform.position, gameObj.transform.position);
                     Debug.Log(distance);
-
-                    if (gameObj.tag == "Enemy" && distance <= range + 0.1)
+                    damage = player.damage;
+                    if (gameObj.tag == "Enemy" && distance <= player.range + 0.1)
                     {
                         HandleCooldown();
                         Enemy enemy = gameObj.GetComponent<Enemy>();
@@ -399,9 +427,9 @@ public class Ability : MonoBehaviour
                 case AbilityType.Splash:
                     if (player.abilityElement == Player.AbilityElement.Default)
                     {
-                        if (gameObj.tag == "Player" || gameObj.tag == "Tile")
+                        if (gameObj.tag == "Player" || (gameObj.tag == "Tile" || gameObj.tag == "Rune"))
                         {
-                            SplashAttack(player.transform.position, Enemy.EnemyState.Default);
+                            SplashAttack(player.transform.position, Enemy.ElementState.Default);
                             HandleCooldown();
                         }
                     }
@@ -410,8 +438,13 @@ public class Ability : MonoBehaviour
                     {
                         cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
                         distance = ManhattanDistance(player.transform.position, cell);
-                        if (gameObj.tag == "Tile" && distance <= range + 0.1)
+                        if ((gameObj.tag == "Tile" || gameObj.tag == "Rune" || gameObj.tag == "Player") && distance <= range + 0.1)
                         {
+                            foreach (GameObject bu in abilitiesUIManager.buttons)
+                            {
+                                var button = bu.GetComponent<UnityEngine.UI.Button>();
+                                button.interactable = false;
+                            }
                             Select();
                             boxCollider.enabled = false;
                             playerMove.lastPos = player.transform.position;
@@ -423,7 +456,7 @@ public class Ability : MonoBehaviour
 
                     if (player.abilityElement == Player.AbilityElement.Wind)
                     {
-                        foreach (Enemy enemy in enemies)
+                        foreach (Enemy enemy in enemiesManager.enemies)
                         {
                             distance = ManhattanDistance(player.transform.position, enemy.transform.position);
 
@@ -449,7 +482,7 @@ public class Ability : MonoBehaviour
                     {
                         cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
                         distance = ManhattanDistance(player.transform.position, cell);
-                        if (gameObj.tag == "Tile" && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                        if ((gameObj.tag == "Tile" || gameObj.tag == "Rune") && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
                             playerMove.lastPos = player.transform.position;
@@ -463,7 +496,7 @@ public class Ability : MonoBehaviour
                         boxCollider.enabled = false;
                         cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
                         distance = ManhattanDistance(player.transform.position, cell);
-                        if (gameObj.tag == "Tile" && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                        if ((gameObj.tag == "Tile" || gameObj.tag == "Rune") && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
                             abilityCollider.enabled = true;
@@ -480,7 +513,7 @@ public class Ability : MonoBehaviour
                         boxCollider.enabled = false;
                         cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
                         distance = ManhattanDistance(player.transform.position, cell);
-                        if (gameObj.tag == "Tile" && distance <= range + 2 + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                        if ((gameObj.tag == "Tile" || gameObj.tag == "Rune") && distance <= range + 2 + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
                             playerMove.lastPos = player.transform.position;
@@ -495,7 +528,7 @@ public class Ability : MonoBehaviour
                     {
                         cell = new Vector2(MathF.Floor(mouseHit.x) + 0.5f, MathF.Floor(mouseHit.y) + 0.5f);
                         distance = ManhattanDistance(player.transform.position, cell);
-                        if (gameObj.tag == "Tile" && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
+                        if ((gameObj.tag == "Tile" || gameObj.tag == "Rune")  && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
                             abilityCollider.enabled = true;
@@ -524,7 +557,7 @@ public class Ability : MonoBehaviour
                         // Debug.Log(tpos);
                         if (tilemap.GetColor(tpos) == UnityEngine.Color.yellow)
                         {
-                            RangeSplashAttack(cell, Enemy.EnemyState.Default);
+                            RangeSplashAttack(cell, Enemy.ElementState.Default);
                             HandleCooldown();
                         }
 
@@ -537,7 +570,7 @@ public class Ability : MonoBehaviour
                         // Debug.Log(tpos);
                         if (tilemap.GetColor(tpos) == UnityEngine.Color.yellow)
                         {
-                            RangeSplashAttack(cell, Enemy.EnemyState.Fire);
+                            RangeSplashAttack(cell, Enemy.ElementState.Fire);
                             HandleCooldown();
                         }
 
@@ -550,12 +583,31 @@ public class Ability : MonoBehaviour
                         // Debug.Log(tpos);
                         if (tilemap.GetColor(tpos) == UnityEngine.Color.yellow)
                         {
-                            RangeSplashAttack(cell, Enemy.EnemyState.Electro);
+                            RangeSplashAttack(cell, Enemy.ElementState.Electro);
 
                             HandleCooldown();
                         }
 
                     }
+
+                    if (player.abilityElement == Player.AbilityElement.Wind)
+                    {
+                        distance = ManhattanDistance(player.transform.position, gameObj.transform.position);
+                        Debug.Log(distance);
+
+                        if ((gameObj.tag == "Enemy") && distance <= range + 0.1 + 4)
+                        {
+                            HandleCooldown();
+                            Enemy enemy = gameObj.GetComponent<Enemy>();
+                            enemy.TakeDamageWithCube(ThrowDice());
+                        }
+                        if (gameObj.tag == "Rune" && distance <= range + 0.1 + 4)
+                        {
+                            HandleCooldown();
+                            gameObj.transform.position = player.transform.position;
+                        }
+                    }
+
                     break;
             }
 

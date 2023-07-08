@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +11,9 @@ public class WaveManager : MonoBehaviour
     [SerializeField] int currentWave;
     [SerializeField] GameObject enemyPrefab;
     [SerializeField] int swordSpawnCount;
+    [SerializeField] TextMeshProUGUI waveText;
+    [SerializeField] TextMeshProUGUI enemiesCountText;
+    int waveEnemiesCount;
 
     void Start()
     {
@@ -24,6 +28,14 @@ public class WaveManager : MonoBehaviour
             enemiesManager.Spawn(Enemy.EnemyType.Sword);
         }
         currentWave += 1;
+        waveEnemiesCount = enemiesManager.enemies.Count;
+        UpdateVisual();
+    }
+
+    public void UpdateVisual()
+    {
+        waveText.text = currentWave.ToString() + ":Волна";
+        enemiesCountText.text = enemiesManager.enemies.Count.ToString() + "/" + waveEnemiesCount.ToString();
     }
 
     // Update is called once per frame

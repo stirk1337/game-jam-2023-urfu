@@ -32,7 +32,7 @@ public class DiceManager : MonoBehaviour
     {
         defaultDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Miss, DiceState.Miss };
         fireDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Crit, DiceState.Miss };
-        electroDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Electro, DiceState.Electro };
+        electroDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Electro, DiceState.Electro };
         windDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Wind, DiceState.Wind };
     }
 
