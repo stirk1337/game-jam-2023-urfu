@@ -32,10 +32,10 @@ public class Ability : MonoBehaviour
         DashEnemies.Add(collision.gameObject);
     }
 
-    [SerializeField] int damage;
-    [SerializeField] int range;
-    [SerializeField] int cooldown;
-    [SerializeField] int currentCooldown;
+    [SerializeField] public int damage;
+    [SerializeField] public int range;
+    [SerializeField] public int cooldown;
+    [SerializeField] public int currentCooldown;
     [SerializeField] AbilityType abilityType;
     [SerializeField] public AbilityState abilityState;
     [SerializeField] Player player;
@@ -178,21 +178,21 @@ public class Ability : MonoBehaviour
             currentRange = range;
             middlePoints = new List<Vector2>()
             {
-                new Vector2(playerMove.targetPos.x - 0.5f + 3, playerMove.targetPos.y - 0.5f),
-                new Vector2(playerMove.targetPos.x - 0.5f - 3, playerMove.targetPos.y - 0.5f),
-                new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f + 3),
-                new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f - 3),
+                new Vector2(playerMove.targetPos.x - 0.5f + range, playerMove.targetPos.y - 0.5f),
+                new Vector2(playerMove.targetPos.x - 0.5f - range, playerMove.targetPos.y - 0.5f),
+                new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f + range),
+                new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f - range),
 
             };
             foreach (Vector2 point in middlePoints)
             {
-                attackPoints.AddRange(FindAttackRangeSquareShape(point, 1));
+                attackPoints.AddRange(FindAttackRangeSquareShape(point, range - 2));
             }
         }
 
         if (abilityType == AbilityType.Range && player.abilityElement == Player.AbilityElement.Wind)
         {
-            currentRange = range + 4;
+            currentRange = range + 2;
             attackPoints = FindAttackRangeDiamondShape(new Vector2(playerMove.targetPos.x - 0.5f, playerMove.targetPos.y - 0.5f), currentRange);
         }
 
@@ -212,13 +212,19 @@ public class Ability : MonoBehaviour
         }
     }
 
+    IEnumerator InSelectTurner(float time)
+    {
+        yield return new WaitForSeconds(time);
+        playerMove.InSelect = !playerMove.InSelect;
+    }
+
     public void Select()
     {
         if (!State.Instance.IsPlayerTurn)
             return;
 
         abilitiesUIManager.TurnInteractable(buttonGameObject);
-        playerMove.InSelect = !playerMove.InSelect;
+        StartCoroutine(InSelectTurner(0.1f));
         switch (abilityState)
         {
             case AbilityState.Ready:
@@ -246,7 +252,7 @@ public class Ability : MonoBehaviour
         player.abilityElement = Player.AbilityElement.Default;
         abilityState = AbilityState.Cooldown;
         currentCooldown = player.currentTurn + cooldown;
-        State.Instance.IsPlayerTurn = false;
+        //State.Instance.IsPlayerTurn = false;
         tilemap.color = UnityEngine.Color.white;
     }
 
@@ -262,9 +268,9 @@ public class Ability : MonoBehaviour
     {
         int diceDamage = damage;
 
-        if (abilityType == AbilityType.Splash && player.abilityElement == Player.AbilityElement.Fire)
+        if (player.abilityElement == Player.AbilityElement.Wind)
         {
-            diceDamage += 5;
+            diceDamage = player.damage;
         }
 
         switch (diceState)
@@ -287,13 +293,13 @@ public class Ability : MonoBehaviour
         switch (player.diceElement)
         {
             case Player.AbilityElement.Default:
-                diceState = diceManager.defaultDice[random];
+                diceState = diceManager.playerDice[random];
                 break;
             case Player.AbilityElement.Fire:
                 diceState = diceManager.fireDice[random];
                 break;
             case Player.AbilityElement.Electro:
-                diceState = diceManager.electroDice[random];
+                diceState = diceManager.electroDice[random];    
                 break;
             case Player.AbilityElement.Wind:
                 diceState = diceManager.windDice[random];
@@ -308,8 +314,9 @@ public class Ability : MonoBehaviour
     }
 
 
-    void SplashAttack(Vector2 position, Enemy.ElementState enemyState)
+    void SplashAttack(int plusDamage, Vector2 position, Enemy.ElementState enemyState)
     {
+        int dmg = damage + plusDamage;
         foreach (Enemy enemy in enemiesManager.enemies)
         {
 
@@ -317,8 +324,7 @@ public class Ability : MonoBehaviour
 
             if (distance <= range + 0.1)
             {
-                enemy.elementState[enemyState] = abilityStateCooldown;
-                enemy.TakeDamageWithoutCube(damage);
+                enemy.TakeDamageWithoutCube(dmg, enemyState, player.abilityElement);
             }
         }
     }
@@ -332,10 +338,9 @@ public class Ability : MonoBehaviour
 
             float distance = Vector2.Distance(position, enemy.transform.position);
             Debug.Log(distance);
-            if (distance <= range + 0.1 + 0.5)
-            {
-                enemy.elementState[enemyState] = abilityStateCooldown;
-                enemy.TakeDamageWithoutCube(damage);
+            if (distance <= range - 2 + 0.1 + 0.5)
+            {          
+                enemy.TakeDamageWithoutCube(damage, enemyState, player.abilityElement);
             }
         }
     }
@@ -346,7 +351,7 @@ public class Ability : MonoBehaviour
         yield return new WaitForSeconds(time);
         Select();
         yield return new WaitForSeconds(time);
-        SplashAttack(player.transform.position, Enemy.ElementState.Default);
+        SplashAttack(0, player.transform.position, Enemy.ElementState.Default);
         HandleCooldown();
         foreach (GameObject bu in abilitiesUIManager.buttons)
         {
@@ -362,7 +367,7 @@ public class Ability : MonoBehaviour
         HandleCooldown();
     }
 
-    IEnumerator FireDash(float time)
+    IEnumerator FireDash(float time, Enemy.ElementState enemyState)
     {
         yield return new WaitForSeconds(time);
         foreach (GameObject fireDash in DashEnemies)
@@ -370,7 +375,7 @@ public class Ability : MonoBehaviour
             if (fireDash.tag == "Enemy")
             {
                 Enemy enemy = fireDash.GetComponent<Enemy>();
-                enemy.TakeDamageWithoutCube(damage);
+                enemy.TakeDamageWithoutCube(damage, enemyState, player.abilityElement);
             }
         }
         DashEnemies.Clear();
@@ -382,6 +387,7 @@ public class Ability : MonoBehaviour
     {
         yield return new WaitForSeconds(time);
         boxCollider.enabled = true;
+        playerMove.onDash = false;
     }
 
     IEnumerator WindDash(float time)
@@ -418,10 +424,12 @@ public class Ability : MonoBehaviour
                     damage = player.damage;
                     if (gameObj.tag == "Enemy" && distance <= player.range + 0.1)
                     {
-                        HandleCooldown();
+                        Select();
+                        tilemap.color = UnityEngine.Color.white;
                         Enemy enemy = gameObj.GetComponent<Enemy>();
                         enemy.TakeDamageWithCube(ThrowDice());
-                    }
+                        SkipTurn();
+                    } 
                     break;
 
                 case AbilityType.Splash:
@@ -429,7 +437,16 @@ public class Ability : MonoBehaviour
                     {
                         if (gameObj.tag == "Player" || (gameObj.tag == "Tile" || gameObj.tag == "Rune"))
                         {
-                            SplashAttack(player.transform.position, Enemy.ElementState.Default);
+                            SplashAttack(0, player.transform.position, Enemy.ElementState.Default);
+                            HandleCooldown();
+                        }
+                    }
+
+                    if (player.abilityElement == Player.AbilityElement.Fire)
+                    {
+                        if (gameObj.tag == "Player" || (gameObj.tag == "Tile" || gameObj.tag == "Rune"))
+                        {
+                            SplashAttack(5, player.transform.position, Enemy.ElementState.Default);
                             HandleCooldown();
                         }
                     }
@@ -468,7 +485,8 @@ public class Ability : MonoBehaviour
                                 float totalForce = force / (offsetX + offsetY + 1f);
                                 Vector3 direction = (enemy.transform.position - player.transform.position).normalized;
                                 Vector3 newCoords = enemy.transform.position + direction * totalForce;
-                                enemy.speed = 10;
+                                enemy.speed = 11;
+                                enemy.TakeDamageWithoutCube(damage, Enemy.ElementState.Wind, player.abilityElement);
                                 enemy.lastPos = enemy.transform.position;
                                 enemy.targetPos = newCoords;
                                 StartCoroutine(WindSplash(1f));
@@ -501,9 +519,9 @@ public class Ability : MonoBehaviour
                             HandleCooldown();
                             abilityCollider.enabled = true;
                             playerMove.lastPos = player.transform.position;
-                            playerMove.speed = 10;
+                            playerMove.speed = 20;
                             playerMove.targetPos = cell;
-                            StartCoroutine(FireDash(0.5f));
+                            StartCoroutine(FireDash(0.5f, Enemy.ElementState.Default));
                         }
                         
                     }
@@ -517,9 +535,11 @@ public class Ability : MonoBehaviour
                         {
                             HandleCooldown();
                             playerMove.lastPos = player.transform.position;
-                            playerMove.speed = 10;
+                            playerMove.onDash = true;
+                            playerMove.speed = 20;
                             playerMove.targetPos = cell;
                             StartCoroutine(ElectroDash(0.5f));
+                            
                         }
 
                     }
@@ -541,7 +561,7 @@ public class Ability : MonoBehaviour
                                 abilityCollider.size = new Vector2(abilityCollider.size.x + 0.3f, abilityCollider.size.y);
                             }
                             playerMove.lastPos = player.transform.position;
-                            playerMove.speed = 10;
+                            playerMove.speed = 20;
                             playerMove.targetPos = cell;
                             StartCoroutine(WindDash(0.5f));
                         }
@@ -595,16 +615,16 @@ public class Ability : MonoBehaviour
                         distance = ManhattanDistance(player.transform.position, gameObj.transform.position);
                         Debug.Log(distance);
 
-                        if ((gameObj.tag == "Enemy") && distance <= range + 0.1 + 4)
-                        {
-                            HandleCooldown();
+                        if ((gameObj.tag == "Enemy") && distance <= range + 0.1 + 2)
+                        { 
                             Enemy enemy = gameObj.GetComponent<Enemy>();
                             enemy.TakeDamageWithCube(ThrowDice());
-                        }
-                        if (gameObj.tag == "Rune" && distance <= range + 0.1 + 4)
-                        {
                             HandleCooldown();
+                        }
+                        if (gameObj.tag == "Rune" && distance <= range + 0.1 + 2)
+                        {
                             gameObj.transform.position = player.transform.position;
+                            HandleCooldown();
                         }
                     }
 
@@ -639,7 +659,7 @@ public class Ability : MonoBehaviour
             }
         }
 
-        if (abilityState == AbilityState.Cooldown && player.currentTurn == currentCooldown)
+        if (abilityState == AbilityState.Cooldown && player.currentTurn >=  currentCooldown)
         {
             abilityState = AbilityState.Ready;
         }

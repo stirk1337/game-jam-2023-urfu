@@ -5,6 +5,8 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using static Ability;
+using static UnityEngine.EventSystems.EventTrigger;
+using static UnityEngine.GraphicsBuffer;
 
 public class Enemy : MonoBehaviour
 {
@@ -28,13 +30,14 @@ public class Enemy : MonoBehaviour
     [SerializeField] public int health;
     [SerializeField] public int shield;
     [SerializeField] public int damage;
+    [SerializeField] public int abilityDamage;
     [SerializeField] public int range;
     [SerializeField] public int MoveSpeed;
     [SerializeField] float speedField;
     [SerializeField] public float speed;
+    [SerializeField] Vector2 fireKnightTarget;
     [SerializeField] public bool IsDead;
     [SerializeField] public EnemyType enemyType;
-    [SerializeField] GameObject enemyPrefab;
     [SerializeField] public Dictionary<ElementState, int> elementState;
     [SerializeField] public float distanceToPlayer;
     [SerializeField] TextMeshProUGUI healthText;
@@ -44,8 +47,17 @@ public class Enemy : MonoBehaviour
     [SerializeField] Player.AbilityElement diceElement;
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] int isCharging;
+    [SerializeField] public int currentAbilityCooldown;
+    [SerializeField] int abilityCooldown;
+    [SerializeField] public ElementState resist;
+
     Player player;
     DiceManager diceManager;
+    List<Vector2> electroMageAttackPoints;
+    ExpRuneManager expRuneManager;
+    EnemiesManager enemiesManager;
+    BoxCollider2D boxCollider;
 
     public Vector2 lastPos;
     public Vector2 targetPos;
@@ -54,11 +66,12 @@ public class Enemy : MonoBehaviour
     {
         if (collision.gameObject.tag == "Enemy")
         {
-            //Debug.Log("enemy collision");
+            
             if (speed >= 10)
             {
                 if (Mathf.Abs(lastPos.x - targetPos.x) < Mathf.Abs(lastPos.y - targetPos.y))
                 {
+                    Debug.Log("enemy collision");
                     int offset = targetPos.y - lastPos.y > 0 ? 1 : -1;
                     Enemy collisionEnemy = collision.gameObject.GetComponent<Enemy>();
                     collisionEnemy.lastPos = collisionEnemy.transform.position;
@@ -76,8 +89,14 @@ public class Enemy : MonoBehaviour
             }
             else
             {
+                //Debug.Log(transform.position);
                 targetPos = new Vector2(MathF.Floor(transform.position.x) + 0.5f, MathF.Floor(transform.position.y) + 0.5f);
             }
+        }
+
+        if (collision.gameObject.tag == "Player")
+        {
+            targetPos = new Vector2(MathF.Floor(transform.position.x) + 0.5f, MathF.Floor(transform.position.y) + 0.5f);
         }
     }
 
@@ -108,7 +127,11 @@ public class Enemy : MonoBehaviour
     public void Init()
     {
         player = FindObjectOfType<Player>();
-        diceManager = FindAnyObjectByType<DiceManager>();
+        boxCollider = GetComponent<BoxCollider2D>();
+        enemiesManager = FindObjectOfType<EnemiesManager>();
+        diceManager = FindObjectOfType<DiceManager>();
+        expRuneManager = FindObjectOfType<ExpRuneManager>();
+        electroMageAttackPoints = new List<Vector2>();
         elementState = new Dictionary<ElementState, int>()
         {
             [ElementState.Electro] = 0,
@@ -120,19 +143,27 @@ public class Enemy : MonoBehaviour
         targetPos = transform.position;
         IsDead = false;
         speed = speedField;
-        switch (enemyType)
-        {
-            case EnemyType.Sword:
-                
-                break;
-        }
     }
 
-    bool inRange(Transform target)
+    bool inRange(Transform target, int range)
     {
-        float distance = Vector2.Distance(gameObject.transform.position, target.position);
+        float distance = ManhattanDistance(gameObject.transform.position, target.position);
         //Debug.Log(distance);
         return distance <= range + 0.1;
+    }
+
+    bool inRangeForward(Transform target, int range)
+    {
+        float distance = ManhattanDistance(gameObject.transform.position, target.position);
+        //Debug.Log(distance);
+        return distance <= range + 0.1 && !(gameObject.transform.position.x != target.position.x && gameObject.transform.position.y != target.position.y);
+    }
+
+    bool inRangeStrogo(Transform target, int range)
+    {
+        float distance = ManhattanDistance(gameObject.transform.position, target.position);
+        //Debug.Log(distance);
+        return distance == range;
     }
 
     void Attack(Transform target)
@@ -140,6 +171,14 @@ public class Enemy : MonoBehaviour
         Player player = target.gameObject.GetComponent<Player>();
         animator.SetTrigger("Attack");
         player.TakeDamageWithCube(ThrowDice());
+    }
+
+    void AbilityAttack(Transform target, ElementState elementState)
+    {
+        Player player = target.gameObject.GetComponent<Player>();
+        player.state[elementState] = 3;
+        animator.SetTrigger("Attack");
+        player.TakeDamageWithoutCube(abilityDamage);
     }
 
     Tuple<int, DiceManager.DiceState> CalculateDamage(DiceManager.DiceState diceState)
@@ -182,13 +221,71 @@ public class Enemy : MonoBehaviour
     }
 
 
+    IEnumerator KnightTurn(Transform target, float time)
+    {
+        if (inRange(target, range))
+        {
+            Attack(target);
+        }
+        else
+        {
+            Move(target);
+            yield return new WaitForSeconds(time);
+            if (inRange(target, range))
+            {
+                Attack(target);
+            }
+            else
+            {
+                Move(target);
+                yield return new WaitForSeconds(time);
+                if (inRange(target, range))
+                {
+                    Attack(target);
+                }
+            }
+        }
+    }
+
+    IEnumerator KnightTurnElectroState(Transform target, float time)
+    {
+        Move(target);
+        yield return new WaitForSeconds(time);
+        Move(target);
+        yield return new WaitForSeconds(time);
+
+    }
+
     public void Turn(Transform target)
     {
         speed = speedField;
+        if (elementState[ElementState.Fire] > 0)
+        {
+            health -= 5;
+            if (health <= 0)
+            {
+                Die();
+                return;
+            }
+        }
+
+        if (elementState[ElementState.Electro] > 0)
+        {
+            if (enemyType == EnemyType.Knight)
+            {
+                KnightTurnElectroState(target, 0.45f);
+            }
+            else
+            {
+                Move(target);
+            }
+            return;
+        }
+
         switch (enemyType)
         {
             case EnemyType.Sword:
-                if (inRange(target))
+                if (inRange(target, range))
                 {
                     Attack(target);
                 }
@@ -196,20 +293,164 @@ public class Enemy : MonoBehaviour
                 {
                     Move(target);
                 }
-                
+
                 break;
 
             case EnemyType.Mage:
+
+                if (currentAbilityCooldown <= 0)
+                {
+                    if (isCharging == 1)
+                    {
+                        // animator.SetTrigger("AttackAbility");
+                        if (inRangeStrogo(target, 3))
+                        {
+                            AbilityAttack(target, ElementState.Default);
+                            currentAbilityCooldown = abilityCooldown;
+                        }
+                        isCharging = 0;
+                    }
+                    else if (inRange(target, range))
+                    {
+                        Attack(target);
+                        isCharging = 0;
+                    }
+                    else if (inRangeStrogo(target, 3))
+                    {
+                        isCharging = 1;
+                        //animator.SetTrigger("ChargeAbility");
+                    }
+                    else
+                    {
+                        Move(target);
+                        isCharging = 0;
+                    }
+                }
+                else
+                {
+                    if (inRange(target, range))
+                    {
+                        Attack(target);
+                    }
+                    else
+                    {
+                        Move(target);
+                    }
+                }
+
                 break;
 
             case EnemyType.Knight:
+                StartCoroutine(KnightTurn(target, 0.45f));
                 break;
 
             case EnemyType.FireKnight:
+                if (currentAbilityCooldown <= 0)
+                {
+                    if (isCharging == 1)
+                    {
+                        // animator.SetTrigger("AttackAbility");
+                        lastPos = targetPos;
+                        targetPos = fireKnightTarget;
+                        currentAbilityCooldown = abilityCooldown;
+                        if (inRangeForward(target, 3))
+                        {
+
+                            AbilityAttack(target, ElementState.Fire);
+                        }
+                        isCharging = 0;
+                    }
+                    else if (inRange(target, range))
+                    {
+                        Attack(target);
+                        isCharging = 0;
+                    }
+                    else if (inRangeForward(target, 3))
+                    {
+                        isCharging = 1;
+                        fireKnightTarget = target.position;
+                        //animator.SetTrigger("ChargeAbility");
+                    }
+                    else
+                    {
+                        Move(target);
+                        isCharging = 0;
+                    }
+                }
+                else
+                {
+                    if (inRange(target, range))
+                    {
+                        Attack(target);
+                    }
+                    else
+                    {
+                        Move(target);
+                    }
+                }
                 break;
 
             case EnemyType.ElectroMage:
+                if (currentAbilityCooldown <= 0)
+                {
+                    if (isCharging == 2)
+                    {
+                        // animator.SetTrigger("AttackAbility");
+                        if (electroMageAttackPoints.Contains(player.transform.position))
+                        {
+                            AbilityAttack(target, ElementState.Electro);
+                        }
+                        isCharging = 0;
+                        currentAbilityCooldown = abilityCooldown;
+                    }
+                    else if (isCharging == 1)
+                        isCharging = 2;
+                    else if (isCharging == 0)
+                    {
+                        if (inRange(target, range))
+                        {
+                            Attack(target);
+                            isCharging = 0;
+                        }
+                        else if (inRangeStrogo(target, 5))
+                        {
+                            electroMageAttackPoints = new List<Vector2>()
+                            {
+                                new Vector2(player.transform.position.x, player.transform.position.y),
+                                new Vector2(player.transform.position.x + 1, player.transform.position.y),
+                                new Vector2(player.transform.position.x + 1, player.transform.position.y - 1),
+                                new Vector2(player.transform.position.x, player.transform.position.y - 1),
+                                new Vector2(player.transform.position.x - 1, player.transform.position.y - 1),
+                                new Vector2(player.transform.position.x - 1, player.transform.position.y),
+                                new Vector2(player.transform.position.x - 1, player.transform.position.y - 1),
+                                new Vector2(player.transform.position.x, player.transform.position.y + 1),
+                                new Vector2(player.transform.position.x + 1, player.transform.position.y + 1),
+                            };
+                            isCharging = 1;
+                            // animator.SetTrigger("CharingAbility");
+                        }
+                        else
+                        {
+                            Move(target);
+                            isCharging = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    if (inRange(target, range))
+                    {
+                        Attack(target);
+                    }
+                    else
+                    {
+                        Move(target);
+                    }
+                }
+
+
                 break;
+
         }
         foreach (var key in elementState.Keys.ToList())
         {
@@ -227,7 +468,7 @@ public class Enemy : MonoBehaviour
             return true;
         }
         return false;
-        
+
     }
 
     bool TryToMove(float x, float y)
@@ -237,6 +478,7 @@ public class Enemy : MonoBehaviour
         if (!IsCollision(moveTo))
         {
             targetPos = moveTo;
+            animator.SetTrigger("Run");
             if (x == -1)
                 spriteRenderer.flipX = true;
             if (x == 1)
@@ -249,12 +491,17 @@ public class Enemy : MonoBehaviour
 
     public void Move(Transform target)
     {
+        if (elementState[ElementState.Wind] > 0)
+        {
+            return;
+        }
+
         float moveX = target.position.x - transform.position.x;
         float moveY = target.position.y - transform.position.y;
         bool cantMove = false;
 
 
-        Debug.Log(moveX.ToString() + "  " + moveY.ToString());
+        //Debug.Log(moveX.ToString() + "  " + moveY.ToString());
         if (Mathf.Abs(moveX) > Mathf.Abs(moveY))
         {
             if (moveX > 0)
@@ -279,7 +526,7 @@ public class Enemy : MonoBehaviour
         }
         if (Math.Abs(moveX) == Math.Abs(moveY) || cantMove)
         {
-            Debug.Log("xd");
+            //Debug.Log("xd");
             char path = "xy"[UnityEngine.Random.Range(0, 1)];
             if (path == 'x')
             {
@@ -306,34 +553,60 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TakeDamageWithoutCube(int dmg)
+
+    public void TakeDamageWithoutCube(int dmg, ElementState element, Player.AbilityElement abilityElement)
     {
-        health -= dmg;
+
+        Debug.Log((ElementState)abilityElement);
+        if ((ElementState)abilityElement == resist && abilityElement != Player.AbilityElement.Default)
+        {
+            dmg /= 2;
+
+        }
+        if (element != resist)
+        {
+            elementState[element] = 3;
+        }
+
+        health -= Mathf.Clamp(dmg, 0, 100000);
+
+        animator.SetTrigger("Damage");
         if (health <= 0)
             Die();
     }
 
     public void TakeDamageWithCube(Tuple<int, DiceManager.DiceState> tuple)
     {
-        health -= tuple.Item1;
-        Debug.Log(tuple.Item1 + tuple.Item2.ToString());
+
+        //Debug.Log(tuple.Item1 + tuple.Item2.ToString());
         switch (tuple.Item2)
         {
             case DiceManager.DiceState.Electro:
                 elementState[ElementState.Electro] = 5;
                 break;
             case DiceManager.DiceState.Wind:
-                State.Instance.FreeMove = true;          
+                State.Instance.FreeMove = true;
                 break;
         }
+
+        if (tuple.Item1 == 0)
+            return;
+
+        animator.SetTrigger("Damage");
+        health -= Mathf.Clamp(tuple.Item1 - shield, 0, 100000);
         if (health <= 0)
             Die();
     }
 
     void Die()
     {
-        Destroy(gameObject);
+        //Destroy(gameObject);
+        //SpriteRenderer sprite = GetComponentInChildren<SpriteRenderer>();
+        //sprite.enabled = false;
+        expRuneManager.Spawn(transform);
         IsDead = true;
+        enemiesManager.DeleteEnemies();
+
     }
 
     float ManhattanDistance(Vector3 a, Vector3 b)
@@ -346,13 +619,22 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        UpdateVisual();
-        foreach(var state in elementState)
+        if (player != null)
         {
-            if (state.Value != 0)
-                Debug.Log(state.Key.ToString() + state.Value.ToString());
+            UpdateVisual();
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
+            distanceToPlayer = ManhattanDistance(player.transform.position, transform.position);
         }
-        transform.position = Vector3.MoveTowards(transform.position, targetPos, Time.deltaTime * speed);
-        distanceToPlayer = ManhattanDistance(player.transform.position, transform.position);
+
+
+        if (player.playerMove.InSelect)
+        {
+            //Debug.Log("xd");
+            boxCollider.size = new Vector2(1, 1);
+        }
+        else
+        {
+            boxCollider.size = new Vector2(0.7f, 0.7f);
+        }
     }
 }

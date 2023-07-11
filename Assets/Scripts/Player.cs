@@ -14,21 +14,31 @@ public class Player : MonoBehaviour
         Electro,
         Wind
     }
-    
 
+
+    [SerializeField] public int maxHealth;
     [SerializeField] public int health;
+    [SerializeField] public int exp;
     [SerializeField] public int damage;
     [SerializeField] public int shield;
     [SerializeField] public int range;
     [SerializeField] public int currentTurn;
-    [SerializeField] PlayerMove playerMove;
+    [SerializeField] public PlayerMove playerMove;
     [SerializeField] public AbilityElement abilityElement;
     [SerializeField] public AbilityElement diceElement;
     [SerializeField] TextMeshProUGUI healthText;
     [SerializeField] TextMeshProUGUI shieldText;
     [SerializeField] TextMeshProUGUI damageText;
     [SerializeField] TextMeshProUGUI rangeText;
+
+
+
     [SerializeField] TextMeshProUGUI runeText;
+    [SerializeField] TextMeshProUGUI expText;
+    [SerializeField] TextMeshProUGUI levelUpText;
+    [SerializeField] public string LevelUpString;
+
+
     [SerializeField] public Dictionary<Enemy.ElementState, int> state;
     [SerializeField] GameObject fireImage;
     [SerializeField] GameObject electroImage;
@@ -50,7 +60,7 @@ public class Player : MonoBehaviour
 
     public void TakeDamageWithCube(Tuple<int, DiceManager.DiceState> tuple)
     {
-        health -= tuple.Item1;
+        health -= Mathf.Clamp(tuple.Item1 - shield, 0, 100000);
         //Debug.Log(tuple.Item1 + tuple.Item2.ToString());
         switch (tuple.Item2)
         {
@@ -65,6 +75,14 @@ public class Player : MonoBehaviour
             Die();
     }
 
+    public void TakeDamageWithoutCube(int damage)
+    {
+        health -= Mathf.Clamp(damage, 0, 100000);
+        //Debug.Log(tuple.Item1 + tuple.Item2.ToString());
+        if (health <= 0)
+            Die();
+    }
+
     void UpdateVisual()
     {
         healthText.text = health.ToString();
@@ -72,6 +90,8 @@ public class Player : MonoBehaviour
         damageText.text = damage.ToString();
         rangeText.text = range.ToString();
         runeText.text = "агЭР: " + abilityElement.ToString();
+        expText.text = exp.ToString() + "/10";
+        levelUpText.text = LevelUpString;
 
         var stateImages = new Dictionary<ElementState, GameObject>()
         {
@@ -94,7 +114,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void Start()
+    private void Awake()
     {
         state = new Dictionary<ElementState, int>()
         {

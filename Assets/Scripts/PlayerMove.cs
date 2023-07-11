@@ -2,16 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerMove : MonoBehaviour
 {
     [SerializeField] Transform player;
+    [SerializeField] Player playerStats;
     [SerializeField] float speedField;
     [SerializeField] float SwipeDeadZone;
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] float cooldown;
     [SerializeField] public bool InSelect;
+    [SerializeField] Vector2 mapSize;
+    [SerializeField] public bool onDash;
     float startTouchPostitionX;
     float endTouchPositionX;
     float startTouchPostitionY;
@@ -20,6 +24,7 @@ public class PlayerMove : MonoBehaviour
     public Vector2 lastPos;
     public Vector2 targetPos;
     public float speed;
+
 
 
     private void Start()
@@ -51,6 +56,9 @@ public class PlayerMove : MonoBehaviour
 
     void CheckInput()
     {
+        if (InSelect)
+            return;
+
         if (Input.GetKeyDown(KeyCode.W))
         {
             Move(0, 1);
@@ -75,14 +83,14 @@ public class PlayerMove : MonoBehaviour
     {
         if (InSelect)
             return;
-        
-        if (Input.GetMouseButtonDown(0))
+        //Debug.Log(startTouchPostitionX.ToString() + endTouchPositionX.ToString());
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             startTouchPostitionX = Input.mousePosition.x;
             startTouchPostitionY = Input.mousePosition.y;
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             endTouchPositionX = Input.mousePosition.x;
             endTouchPositionY = Input.mousePosition.y;
@@ -128,10 +136,34 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
+    bool IsPointWithinMap(Vector2 point, Vector2 mapSize)
+    {
+        float halfMapWidth = mapSize.x / 2f;
+        float halfMapHeight = mapSize.y / 2f;
+
+        if (point.x < -halfMapWidth || point.x > halfMapWidth)
+            return false;
+
+        if (point.y < -halfMapHeight || point.y > halfMapHeight)
+            return false;
+
+        return true;
+    }
+
     void Update()
     {
         player.position = Vector3.MoveTowards(player.position, targetPos, Time.deltaTime * speed);
-        if (State.Instance.IsPlayerTurn && !onCooldown)
+
+        if (!IsPointWithinMap(targetPos, mapSize))
+        {
+            targetPos = lastPos;
+        }
+
+        if (playerStats.state[Enemy.ElementState.Wind] > 0)
+        {
+            return;
+        }
+        if (State.Instance.IsPlayerTurn && !onCooldown && !onDash)
         {
             speed = speedField;
             CheckInput();

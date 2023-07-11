@@ -14,11 +14,12 @@ public class RuneManager : MonoBehaviour
     
     [SerializeField] int cooldown;
     [SerializeField] int distance;
+    [SerializeField] Vector2 mapSize;
     [SerializeField] Player.AbilityElement runeElement;
     [SerializeField] int currentCooldown;
     [SerializeField] RuneState runeState;
     Player player;
-    BoxCollider2D boxCollider;
+    public BoxCollider2D boxCollider;
     SpriteRenderer sprite;
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -36,7 +37,7 @@ public class RuneManager : MonoBehaviour
         currentCooldown = player.currentTurn + cooldown;
         runeState = RuneState.Cooldown;
         sprite.color = new Color(1f, 1f, 1f, 0f);
-        boxCollider.enabled = false;
+        transform.position = new Vector2(-10000, -10000);
     }
 
     public List<Vector2> GetPointsAroundPlayer(Vector2 playerPosition)
@@ -56,17 +57,52 @@ public class RuneManager : MonoBehaviour
         return points;
     }
 
+    public bool IsPointWithinMap(Vector2 point, Vector2 mapSize)
+    {
+        float halfMapWidth = mapSize.x / 2f;
+        float halfMapHeight = mapSize.y / 2f;
+
+        if (point.x < -halfMapWidth || point.x > halfMapWidth)
+            return false;
+
+        if (point.y < -halfMapHeight || point.y > halfMapHeight)
+            return false;
+
+        return true;
+    }
+
+    Vector2 GetRandomSpawnPoint()
+    {
+        List<Vector2> spawnPoints = GetPointsAroundPlayer(player.transform.position);
+        Vector2 randomPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+        if (IsPointWithinMap(randomPoint, mapSize))
+        {
+            return randomPoint;
+        }
+        else
+        {
+            return GetRandomSpawnPoint();
+        }
+    }
+
     void Spawn()
     {
+        
         runeState = RuneState.Active;
-        runeElement = (Player.AbilityElement)Random.Range(1, 3);
-        List<Vector2> spawnPoints = GetPointsAroundPlayer(player.transform.position);
+        int random = Random.Range(1, 4);
+        //Debug.Log(random);
+        runeElement = (Player.AbilityElement)random;
+        //runeElement = (Player.AbilityElement)3;
+        
         player = FindAnyObjectByType<Player>();
         sprite.color = Color.white;
         boxCollider.enabled = true;
-        Vector2 randomPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-        gameObject.transform.position = randomPoint;
+        
+        gameObject.transform.position = GetRandomSpawnPoint();
     }
+
+    
+
 
     void Start()
     {
@@ -83,5 +119,6 @@ public class RuneManager : MonoBehaviour
         {
             Spawn();
         }
+
     }
 }

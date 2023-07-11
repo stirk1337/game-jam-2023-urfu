@@ -119,12 +119,12 @@ GameObject:
   - component: {fileID: 5978671868352025737}
   - component: {fileID: 4769833306880896148}
   m_Layer: 0
-  m_Name: Enemy 1
+  m_Name: FireSword
   m_TagString: Enemy
   m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6871651202937496183
 Transform:
   m_ObjectHideFlags: 0
@@ -154,24 +154,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d548c52a7f0c51442bb1b353c303747a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 15
-  shield: 0
-  damage: 1
+  health: 40
+  shield: 10
+  damage: 10
+  abilityDamage: 10
   range: 1
   MoveSpeed: 0
-  speedField: 3
+  speedField: 6
   speed: 0
+  fireKnightTarget: {x: 0, y: 0}
   IsDead: 0
-  enemyType: 0
-  enemyPrefab: {fileID: 0}
+  enemyType: 3
   distanceToPlayer: 0
   healthText: {fileID: 3737655484771590315}
   fireImage: {fileID: 7072527124112312376}
   electroImage: {fileID: 4727919745330115503}
   windImage: {fileID: 8689210477634083905}
-  diceElement: 0
-  animator: {fileID: 3857160212021800533}
+  diceElement: 1
+  animator: {fileID: 5641919516359894070}
   spriteRenderer: {fileID: 7890163577794550889}
+  isCharging: 0
+  currentAbilityCooldown: 0
+  abilityCooldown: 5
+  resist: 1
   lastPos: {x: 0, y: 0}
   targetPos: {x: 0, y: 0}
 --- !u!61 &5978671868352025737
@@ -217,7 +222,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.8}
+  m_Size: {x: 0.7, y: 0.7}
   m_EdgeRadius: 0
 --- !u!50 &4769833306880896148
 Rigidbody2D:
@@ -332,7 +337,7 @@ GameObject:
   m_Component:
   - component: {fileID: 484817868144662178}
   - component: {fileID: 7890163577794550889}
-  - component: {fileID: 3857160212021800533}
+  - component: {fileID: 5641919516359894070}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -349,7 +354,7 @@ Transform:
   m_GameObject: {fileID: 4819296749317236587}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.154, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 0.2}
+  m_LocalScale: {x: 0.1, y: 0.07, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6871651202937496183}
@@ -396,7 +401,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 432b5fcc854ed3841a6a203da3addd16, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 36af6dd1c5345df4f9b5c8c2a199b3e2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -407,7 +412,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!95 &3857160212021800533
+--- !u!95 &5641919516359894070
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
@@ -417,7 +422,7 @@ Animator:
   m_GameObject: {fileID: 4819296749317236587}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 6f5d0a8cdfdf6054b866de84584f5a56, type: 2}
+  m_Controller: {fileID: 9100000, guid: 16970082a28e3e246b0556f8b7b0e726, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

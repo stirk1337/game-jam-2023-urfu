@@ -13,6 +13,7 @@ public class State : MonoBehaviour
         if (Instance == null)
         {
             IsPlayerTurn = true;
+            Random.seed = System.DateTime.Now.Millisecond;
             transform.parent = null;
             DontDestroyOnLoad(gameObject);
             Instance = this;

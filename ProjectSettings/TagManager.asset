@@ -7,6 +7,7 @@ TagManager:
   - Tile
   - Enemy
   - Rune
+  - Ability
   layers:
   - Default
   - TransparentFX
