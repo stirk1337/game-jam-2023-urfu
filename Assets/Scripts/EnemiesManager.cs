@@ -9,6 +9,7 @@ using TMPro;
 using static Ability;
 using UnityEngine.Tilemaps;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class EnemiesManager : MonoBehaviour
 {
@@ -23,11 +24,24 @@ public class EnemiesManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI damageText;
     [SerializeField] TextMeshProUGUI rangeText;
     [SerializeField] TextMeshProUGUI moveSpeedText;
+    [SerializeField] TextMeshProUGUI nameText;
+    [SerializeField] TextMeshProUGUI abilityDamageText;
+    [SerializeField] TextMeshProUGUI chargeText;
+    [SerializeField] GameObject abilityText;
+    [SerializeField] GameObject clock;
+    [SerializeField] Image abilityDamageSprite;
+    [SerializeField] Image sprite;
+    [SerializeField] Image rangeSprite;
+    [SerializeField] Image resistSprite;
+    [SerializeField] Image abilityEffectSprite;
+    [SerializeField] GameObject diceCanvas;
+
     RuneManager runeManager;
     ExpRuneManager expRuneManager;
     WaveManager waveManager;
     bool onCooldown;
     Player player;
+    Enemy lastPickedEnemy;
 
 
     void Start()
@@ -41,7 +55,7 @@ public class EnemiesManager : MonoBehaviour
 
     Vector2 GetRandomSpawnPoint()
     {
-        Vector2 position = new Vector2(0.5f , 0.5f);
+        Vector2 position = new Vector2(0.5f, 0.5f);
 
         int offsetX = Random.Range(minSpawnDistance, maxSpawnDistance + 1) * (Random.value < 0.5f ? -1 : 1);
         int offsetY = Random.Range(minSpawnDistance, maxSpawnDistance + 1) * (Random.value < 0.5f ? -1 : 1);
@@ -64,10 +78,10 @@ public class EnemiesManager : MonoBehaviour
         GameObject gameObj = Instantiate(prefab, spawnPoint, transform.rotation);
         gameObj.SetActive(true);
         Enemy enemy = gameObj.GetComponent<Enemy>();
-        
+
         enemy.enemyType = enemyType;
         enemy.Init();
-        enemies.Add(enemy);   
+        enemies.Add(enemy);
     }
 
     public void DeleteEnemies()
@@ -88,7 +102,7 @@ public class EnemiesManager : MonoBehaviour
     IEnumerator EnemiesTurn()
     {
         enemies = enemies.OrderByDescending(x => x.distanceToPlayer).ToList();
-        
+
         yield return new WaitForSeconds(afterPlayerWait);
         if (!State.Instance.FreeMove)
         {
@@ -102,6 +116,8 @@ public class EnemiesManager : MonoBehaviour
                 }
                 else
                 {
+                    if (player == null)
+                        continue;
                     enemies[i].Turn(player.transform);
                     enemies[i].currentAbilityCooldown -= 1;
                 }
@@ -120,26 +136,125 @@ public class EnemiesManager : MonoBehaviour
         waveManager.UpdateVisual();
     }
     // Update is called once per frame
-    void Update()
+
+    void UpdateVisualLiveEnemy()
+    {
+        if (lastPickedEnemy == null)
+            return;
+        
+        //enemyHudCanvas.SetActive(true);
+        healthText.text = lastPickedEnemy.health.ToString();
+        shieldText.text = lastPickedEnemy.shield.ToString();
+        damageText.text = lastPickedEnemy.damage.ToString();
+        rangeText.text = lastPickedEnemy.range.ToString();
+        moveSpeedText.text = lastPickedEnemy.MoveSpeed.ToString();
+
+        switch (lastPickedEnemy.enemyType)
+        {
+            case EnemyType.Sword:
+                nameText.text = "Мечник";
+                resistSprite.gameObject.SetActive(false);
+                sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
+                abilityText.SetActive(false);
+                chargeText.gameObject.SetActive(false);
+                clock.SetActive(false);
+                abilityDamageSprite.gameObject.SetActive(false);
+                abilityEffectSprite.gameObject.SetActive(false);
+                rangeSprite.gameObject.SetActive(false);
+                abilityDamageText.gameObject.SetActive(false);
+                break;
+            case EnemyType.Mage:
+                nameText.text = "Маг";
+                resistSprite.gameObject.SetActive(false);
+                sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
+                abilityText.SetActive(true);
+                chargeText.text = lastPickedEnemy.isCharging.ToString() + "/" + lastPickedEnemy.maxCharge.ToString();
+                chargeText.gameObject.SetActive(true);
+                clock.SetActive(true);
+                abilityDamageSprite.gameObject.SetActive(true);
+                abilityEffectSprite.sprite = lastPickedEnemy.abilityDamageSprite;
+                abilityEffectSprite.gameObject.SetActive(false);
+                rangeSprite.gameObject.SetActive(true);
+                abilityDamageText.text = lastPickedEnemy.abilityDamage.ToString();
+                abilityDamageText.gameObject.SetActive(true);
+                break;
+            case EnemyType.Knight:
+                nameText.text = "Рыцарь";
+                resistSprite.gameObject.SetActive(false);
+                sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
+                abilityText.SetActive(false);
+                chargeText.gameObject.SetActive(false);
+                clock.SetActive(false);
+                abilityDamageSprite.gameObject.SetActive(false);
+                abilityEffectSprite.gameObject.SetActive(false);
+                rangeSprite.gameObject.SetActive(false);
+                abilityDamageText.gameObject.SetActive(false);
+                break;
+            case EnemyType.FireKnight:
+                nameText.text = "Огненный мечник";
+                resistSprite.sprite = lastPickedEnemy.resistSprite;
+                resistSprite.gameObject.SetActive(true);
+                sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
+                abilityText.SetActive(true);
+                chargeText.text = lastPickedEnemy.isCharging.ToString() + "/" + lastPickedEnemy.maxCharge.ToString();
+                chargeText.gameObject.SetActive(true);
+                clock.SetActive(true);
+                abilityDamageSprite.gameObject.SetActive(true);
+                abilityEffectSprite.sprite = lastPickedEnemy.abilityDamageSprite;
+                abilityEffectSprite.gameObject.SetActive(true);
+                rangeSprite.sprite = lastPickedEnemy.rangeSprite;
+                rangeSprite.gameObject.SetActive(true);
+                abilityDamageText.text = lastPickedEnemy.abilityDamage.ToString();
+                abilityDamageText.gameObject.SetActive(true);
+                break;
+            case EnemyType.ElectroMage:
+                nameText.text = "Маг молнии";
+                resistSprite.sprite = lastPickedEnemy.resistSprite;
+                resistSprite.gameObject.SetActive(true);
+                sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
+                abilityText.SetActive(true);
+                chargeText.text = lastPickedEnemy.isCharging.ToString() + "/" + lastPickedEnemy.maxCharge.ToString();
+                chargeText.gameObject.SetActive(true);
+                clock.SetActive(true);
+                abilityDamageSprite.gameObject.SetActive(true);
+                abilityEffectSprite.sprite = lastPickedEnemy.abilityDamageSprite;
+                abilityEffectSprite.gameObject.SetActive(true);
+                rangeSprite.sprite = lastPickedEnemy.rangeSprite;
+                rangeSprite.gameObject.SetActive(true);
+                abilityDamageText.text = lastPickedEnemy.abilityDamage.ToString();
+                abilityDamageText.gameObject.SetActive(true);
+                break;
+        }
+    }
+
+
+    void UpdateVisualEnemyCanvas()
     {
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        
         if (Input.GetMouseButtonUp(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             if (hit.transform != null && hit.transform.gameObject.tag == "Enemy")
             {
-                Enemy enemy = hit.transform.transform.gameObject.GetComponent<Enemy>();
+                lastPickedEnemy = hit.transform.transform.gameObject.GetComponent<Enemy>();
                 enemyHudCanvas.SetActive(true);
-                healthText.text = enemy.health.ToString();
-                shieldText.text = enemy.shield.ToString();
-                damageText.text = enemy.damage.ToString();
-                rangeText.text = enemy.range.ToString();
-                moveSpeedText.text = enemy.MoveSpeed.ToString();
+                diceCanvas.SetActive(false);
             }
             else
             {
+                //Debug.Log("xd");
                 enemyHudCanvas.SetActive(false);
+                diceCanvas.SetActive(false);
             }
         }
+    }
+
+
+
+    void Update()
+    {
+        UpdateVisualEnemyCanvas();
+        UpdateVisualLiveEnemy();
 
         if (!State.Instance.IsPlayerTurn && !onCooldown)
         {
@@ -162,3 +277,5 @@ public class EnemiesManager : MonoBehaviour
         }
     }
 }
+
+

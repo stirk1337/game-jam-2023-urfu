@@ -12,7 +12,7 @@ public class AbilitiesUIManager : MonoBehaviour
     [SerializeField] Sprite electroCube;
     [SerializeField] Sprite fireCube;
     [SerializeField] Sprite windCube;
-    [SerializeField] Image currentCubeSprite;
+    [SerializeField] public Image currentCubeSprite;
     Ability[] abilities;
 
     public void TurnInteractable(GameObject current)

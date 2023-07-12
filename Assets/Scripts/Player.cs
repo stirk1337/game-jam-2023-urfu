@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using static Enemy;
 
 public class Player : MonoBehaviour
@@ -33,7 +34,8 @@ public class Player : MonoBehaviour
 
 
 
-    [SerializeField] TextMeshProUGUI expText;
+    [SerializeField] List<Sprite> spriteExp;
+    [SerializeField] Image expSprite;
     [SerializeField] TextMeshProUGUI levelUpText;
     [SerializeField] public string LevelUpString;
 
@@ -48,6 +50,8 @@ public class Player : MonoBehaviour
     [SerializeField] GameObject windCubeImage;
     public Dictionary<AbilityElement, GameObject> currentDices;
 
+    GameManager gameManager;
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -55,6 +59,12 @@ public class Player : MonoBehaviour
         {
             playerMove.targetPos = new Vector2(MathF.Floor(playerMove.transform.position.x) + 0.5f, MathF.Floor(playerMove.transform.position.y) + 0.5f);
         }
+    }
+
+    private void Start()
+    {
+        gameManager = FindObjectOfType<GameManager>();
+        
     }
 
     public void TakeDamageWithCube(Tuple<int, DiceManager.DiceState> tuple)
@@ -82,14 +92,26 @@ public class Player : MonoBehaviour
             Die();
     }
 
+    IEnumerator DisableUpgradeText()
+    {
+        yield return new WaitForSeconds(6f);
+        LevelUpString = "";
+    }
+
     void UpdateVisual()
     {
         healthText.text = health.ToString();
         shieldText.text = shield.ToString();
         damageText.text = damage.ToString();
         rangeText.text = range.ToString();
-        expText.text = exp.ToString() + "/10";
+        expSprite.sprite = spriteExp[exp];
+
+        if (LevelUpString != levelUpText.text)
+        {
+            StartCoroutine(DisableUpgradeText());
+        }
         levelUpText.text = LevelUpString;
+
 
         var stateImages = new Dictionary<ElementState, GameObject>()
         {
@@ -139,5 +161,6 @@ public class Player : MonoBehaviour
     public void Die()
     {
         Destroy(gameObject);
+        gameManager.Lost();
     }
 }

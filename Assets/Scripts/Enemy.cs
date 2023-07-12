@@ -47,10 +47,16 @@ public class Enemy : MonoBehaviour
     [SerializeField] Player.AbilityElement diceElement;
     [SerializeField] Animator animator;
     [SerializeField] SpriteRenderer spriteRenderer;
-    [SerializeField] int isCharging;
+    [SerializeField] public int isCharging;
     [SerializeField] public int currentAbilityCooldown;
     [SerializeField] int abilityCooldown;
     [SerializeField] public ElementState resist;
+    [SerializeField] public int maxCharge;
+
+
+    [SerializeField] public Sprite resistSprite;
+    [SerializeField] public Sprite rangeSprite;
+    [SerializeField] public Sprite abilityDamageSprite;
 
     Player player;
     DiceManager diceManager;
@@ -147,6 +153,9 @@ public class Enemy : MonoBehaviour
 
     bool inRange(Transform target, int range)
     {
+        if (target == null)
+            return false;
+        
         float distance = ManhattanDistance(gameObject.transform.position, target.position);
         //Debug.Log(distance);
         return distance <= range + 0.1;
@@ -154,6 +163,9 @@ public class Enemy : MonoBehaviour
 
     bool inRangeForward(Transform target, int range)
     {
+        if (target == null)
+            return false;
+
         float distance = ManhattanDistance(gameObject.transform.position, target.position);
         //Debug.Log(distance);
         return distance <= range + 0.1 && !(gameObject.transform.position.x != target.position.x && gameObject.transform.position.y != target.position.y);
@@ -161,6 +173,9 @@ public class Enemy : MonoBehaviour
 
     bool inRangeStrogo(Transform target, int range)
     {
+        if (target == null)
+            return false;
+
         float distance = ManhattanDistance(gameObject.transform.position, target.position);
         //Debug.Log(distance);
         return distance == range;
@@ -168,6 +183,9 @@ public class Enemy : MonoBehaviour
 
     void Attack(Transform target)
     {
+        if (target == null)
+            return;
+
         Player player = target.gameObject.GetComponent<Player>();
         animator.SetTrigger("Attack");
         player.TakeDamageWithCube(ThrowDice());
@@ -175,6 +193,9 @@ public class Enemy : MonoBehaviour
 
     void AbilityAttack(Transform target, ElementState elementState)
     {
+        if (target == null)
+            return;
+
         Player player = target.gameObject.GetComponent<Player>();
         player.state[elementState] = 3;
         animator.SetTrigger("Attack");
@@ -494,6 +515,11 @@ public class Enemy : MonoBehaviour
     public void Move(Transform target)
     {
         if (elementState[ElementState.Wind] > 0)
+        {
+            return;
+        }
+
+        if (target == null)
         {
             return;
         }

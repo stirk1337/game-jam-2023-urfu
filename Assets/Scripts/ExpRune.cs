@@ -38,10 +38,12 @@ public class ExpRune : MonoBehaviour
         }
     }
 
+
     void Upgrade()
     {
         int random = Random.Range(0, 8);
         //random = 4;
+
         switch (random)
         {
             case (0):
@@ -49,7 +51,7 @@ public class ExpRune : MonoBehaviour
                 {
                     player.range += 1;
                     playerRangeUpgradedTimes += 1;
-                    player.LevelUpString = "+1 range";
+                    player.LevelUpString = "+1 к дальности атаки";
                 }
                 else
                 {
@@ -64,7 +66,7 @@ public class ExpRune : MonoBehaviour
                     {
                         ability.cooldown -= 5;
                         abilityCooldownUpgradedTimes += 1;
-                        player.LevelUpString = "-5 cd on abilities";
+                        player.LevelUpString = "-5 к скорости перезарядке способностей";
                     }
                 }
                 else
@@ -80,7 +82,7 @@ public class ExpRune : MonoBehaviour
                     {
                         ability.range += 1;
                         abilityRangeUpgradedTimes += 1;
-                        player.LevelUpString = "+1 range on abilities";
+                        player.LevelUpString = "+1 к дальности атаки способностей";
                     }
                 }
                 else
@@ -91,7 +93,7 @@ public class ExpRune : MonoBehaviour
 
             case (3):
                 hpValue += 5;
-                player.LevelUpString = "+5 hp on runes";
+                player.LevelUpString = "+5 здоровья от рун";
                 break;
 
             case (4):
@@ -106,7 +108,7 @@ public class ExpRune : MonoBehaviour
                         }                 
                     }
                     diceUpgradedTimes += 1;
-                    player.LevelUpString = "dice upgrade";
+                    player.LevelUpString = "Улучшение обычного кубика";
                 }
                 else
                 {
@@ -115,11 +117,11 @@ public class ExpRune : MonoBehaviour
                 break;
             case (5):
                 player.health = player.maxHealth;
-                player.LevelUpString = "heal";
+                player.LevelUpString = "Исцеление";
                 break;
             case (6):
                 player.damage += 10;
-                player.LevelUpString = "+10 dmg";
+                player.LevelUpString = "+10 к урону";
                 break;
             case (7):
                 if (abilityDamageUpdradedTimes < 1)
@@ -128,7 +130,7 @@ public class ExpRune : MonoBehaviour
                     {
                         ability.damage += 5;
                         abilityDamageUpdradedTimes += 1;
-                        player.LevelUpString = "+5 abilities damage";
+                        player.LevelUpString = "+5 к урону способностей";
                     }
                 }
                 else
@@ -137,8 +139,8 @@ public class ExpRune : MonoBehaviour
                 }
                 break;
 
-
         }
+        
     }
 
     void Start()

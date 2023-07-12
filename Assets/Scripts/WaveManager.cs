@@ -8,7 +8,7 @@ public class WaveManager : MonoBehaviour
 {
     // Start is called before the first frame update
     EnemiesManager enemiesManager;
-    [SerializeField] int currentWave;
+    [SerializeField] public int currentWave;
     [SerializeField] GameObject swordPrefab;
     [SerializeField] GameObject magePrefab;
     [SerializeField] GameObject knightPrefab;
@@ -43,7 +43,7 @@ public class WaveManager : MonoBehaviour
         switch (currentWave)
         {
             case 1:
-                SetEnemiesCount(0, 0, 2, 0, 0);
+                SetEnemiesCount(4, 0, 0, 0, 0);
                 break;
             case 2:
                 SetEnemiesCount(3, 2, 0, 0, 0);
