@@ -78,8 +78,9 @@ public class EnemiesManager : MonoBehaviour
             if (enemies[i].IsDead)
             {
                 GameObject enemy = enemies[i].gameObject;
-                enemies.RemoveAt(i);
-                Destroy(enemy.gameObject);
+                enemy.SetActive(false);
+                //enemies.RemoveAt(i);
+                //Destroy(enemy.gameObject);
             }
         }
     }

@@ -303,12 +303,14 @@ public class Enemy : MonoBehaviour
                     if (isCharging == 1)
                     {
                         // animator.SetTrigger("AttackAbility");
+                        currentAbilityCooldown = abilityCooldown;
                         if (inRangeStrogo(target, 3))
                         {
                             AbilityAttack(target, ElementState.Default);
-                            currentAbilityCooldown = abilityCooldown;
+                            
                         }
                         isCharging = 0;
+                        animator.SetBool("Charging", false);
                     }
                     else if (inRange(target, range))
                     {
@@ -318,7 +320,7 @@ public class Enemy : MonoBehaviour
                     else if (inRangeStrogo(target, 3))
                     {
                         isCharging = 1;
-                        //animator.SetTrigger("ChargeAbility");
+                        animator.SetBool("Charging", true);
                     }
                     else
                     {

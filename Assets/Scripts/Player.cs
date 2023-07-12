@@ -33,7 +33,6 @@ public class Player : MonoBehaviour
 
 
 
-    [SerializeField] TextMeshProUGUI runeText;
     [SerializeField] TextMeshProUGUI expText;
     [SerializeField] TextMeshProUGUI levelUpText;
     [SerializeField] public string LevelUpString;
@@ -89,7 +88,6 @@ public class Player : MonoBehaviour
         shieldText.text = shield.ToString();
         damageText.text = damage.ToString();
         rangeText.text = range.ToString();
-        runeText.text = "агЭР: " + abilityElement.ToString();
         expText.text = exp.ToString() + "/10";
         levelUpText.text = LevelUpString;
 

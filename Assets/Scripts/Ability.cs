@@ -9,6 +9,7 @@ using UnityEngine.Experimental.AI;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
+using TMPro;
 
 public class Ability : MonoBehaviour
 {
@@ -46,6 +47,15 @@ public class Ability : MonoBehaviour
     [SerializeField] BoxCollider2D boxCollider;
     [SerializeField] BoxCollider2D abilityCollider;
     [SerializeField] int abilityStateCooldown;
+    [SerializeField] Animator animator;
+    [SerializeField] public TextMeshProUGUI cooldownText;
+    [SerializeField] public GameObject buttonCanvas;
+    [SerializeField] public GameObject cooldownImage;
+    [SerializeField] public Sprite DefaultImage;
+    [SerializeField] public Sprite ElectroImage;
+    [SerializeField] public Sprite FireImage;
+    [SerializeField] public Sprite WindImage;
+
     EnemiesManager enemiesManager;
     List<GameObject> DashEnemies;
    
@@ -420,11 +430,12 @@ public class Ability : MonoBehaviour
                 
                 case AbilityType.Melee:
                     float distance = ManhattanDistance(player.transform.position, gameObj.transform.position);
-                    Debug.Log(distance);
+                    //Debug.Log(distance);
                     damage = player.damage;
                     if (gameObj.tag == "Enemy" && distance <= player.range + 0.1)
                     {
                         Select();
+                        animator.SetTrigger("Attack");
                         tilemap.color = UnityEngine.Color.white;
                         Enemy enemy = gameObj.GetComponent<Enemy>();
                         enemy.TakeDamageWithCube(ThrowDice());
@@ -438,6 +449,7 @@ public class Ability : MonoBehaviour
                         if (gameObj.tag == "Player" || (gameObj.tag == "Tile" || gameObj.tag == "Rune"))
                         {
                             SplashAttack(0, player.transform.position, Enemy.ElementState.Default);
+                            animator.SetTrigger("Splash");
                             HandleCooldown();
                         }
                     }
@@ -447,6 +459,7 @@ public class Ability : MonoBehaviour
                         if (gameObj.tag == "Player" || (gameObj.tag == "Tile" || gameObj.tag == "Rune"))
                         {
                             SplashAttack(5, player.transform.position, Enemy.ElementState.Default);
+                            animator.SetTrigger("Splash");
                             HandleCooldown();
                         }
                     }
@@ -463,6 +476,7 @@ public class Ability : MonoBehaviour
                                 button.interactable = false;
                             }
                             Select();
+                            animator.SetTrigger("Splash");
                             boxCollider.enabled = false;
                             playerMove.lastPos = player.transform.position;
                             playerMove.speed = 10;
@@ -480,6 +494,7 @@ public class Ability : MonoBehaviour
                             if (distance <= 1 + 0.1)
                             {
                                 float force = 6f;
+                                animator.SetTrigger("Splash");
                                 float offsetX = Mathf.Abs(enemy.transform.position.x - player.transform.position.x);
                                 float offsetY = Mathf.Abs(enemy.transform.position.y - player.transform.position.y);
                                 float totalForce = force / (offsetX + offsetY + 1f);
@@ -505,6 +520,7 @@ public class Ability : MonoBehaviour
                             HandleCooldown();
                             playerMove.lastPos = player.transform.position;
                             playerMove.speed = 10;
+                            animator.SetTrigger("Dash");
                             playerMove.targetPos = cell;
                         }
                     }
@@ -517,6 +533,7 @@ public class Ability : MonoBehaviour
                         if ((gameObj.tag == "Tile" || gameObj.tag == "Rune") && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
+                            animator.SetTrigger("Dash");
                             abilityCollider.enabled = true;
                             playerMove.lastPos = player.transform.position;
                             playerMove.speed = 20;
@@ -534,6 +551,7 @@ public class Ability : MonoBehaviour
                         if ((gameObj.tag == "Tile" || gameObj.tag == "Rune") && distance <= range + 2 + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
+                            animator.SetTrigger("Dash");
                             playerMove.lastPos = player.transform.position;
                             playerMove.onDash = true;
                             playerMove.speed = 20;
@@ -551,6 +569,7 @@ public class Ability : MonoBehaviour
                         if ((gameObj.tag == "Tile" || gameObj.tag == "Rune")  && distance <= range + 0.1 && !(player.transform.position.x != cell.x && player.transform.position.y != cell.y))
                         {
                             HandleCooldown();
+                            animator.SetTrigger("Dash");
                             abilityCollider.enabled = true;
                             if (Mathf.Abs(cell.x - player.transform.position.x) > Mathf.Abs(cell.y - player.transform.position.y))
                             {

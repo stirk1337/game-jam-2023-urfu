@@ -43,7 +43,7 @@ public class WaveManager : MonoBehaviour
         switch (currentWave)
         {
             case 1:
-                SetEnemiesCount(4, 0, 0, 0, 0);
+                SetEnemiesCount(0, 0, 2, 0, 0);
                 break;
             case 2:
                 SetEnemiesCount(3, 2, 0, 0, 0);
@@ -114,7 +114,7 @@ public class WaveManager : MonoBehaviour
 
     public void UpdateVisual()
     {
-        waveText.text = currentWave.ToString() + ":Волна";
+        waveText.text = currentWave.ToString() + " Волна";
         enemiesCountText.text = enemiesManager.enemies.Count.ToString() + "/" + waveEnemiesCount.ToString();
     }
 
