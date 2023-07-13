@@ -1,0 +1,528 @@
+fileFormatVersion: 2
+guid: 100b9e93d9e216c4999a1f46bb541ccb
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 62a9f0aa5b59740cfbadc7e5f9823bb0, type: 3}
+  textureImporterSettings:
+    alphaSource: 1
+    mipMapMode: 0
+    enableMipMap: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+    convertToNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+    swizzle: 50462976
+    isReadable: 0
+    streamingMipmaps: 0
+    streamingMipmapsPriority: 0
+    vTOnly: 0
+    ignoreMipmapLimit: 0
+    nPOTScale: 1
+    sRGBTexture: 1
+    spriteMode: 2
+    spriteExtrude: 1
+    spriteMeshType: 1
+    alignment: 0
+    spritePivot: {x: 0.5, y: 0.5}
+    spritePixelsToUnits: 100
+    spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+    spriteGenerateFallbackPhysicsShape: 0
+    generateCubemap: 6
+    cubemapConvolution: 0
+    seamlessCubemap: 0
+    alphaIsTransparency: 1
+    spriteTessellationDetail: -1
+    textureType: 8
+    textureShape: 1
+    singleChannelComponent: 0
+    flipbookRows: 0
+    flipbookColumns: 0
+    ignorePngGamma: 0
+    cookieMode: 0
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+    normalMap: 0
+    textureFormat: 0
+    maxTextureSize: 0
+    lightmap: 0
+    compressionQuality: 0
+    linearTexture: 0
+    grayScaleToAlpha: 0
+    rGBM: 0
+    cubemapConvolutionSteps: 0
+    cubemapConvolutionExponent: 0
+    maxTextureSizeSet: 0
+    compressionQualitySet: 0
+    textureFormatSet: 0
+    applyGammaDecoding: 0
+  previousAsepriteImporterSettings:
+    fileImportMode: 1
+    importHiddenLayers: 0
+    layerImportMode: 1
+    defaultPivotSpace: 0
+    defaultPivotAlignment: 7
+    customPivotPosition: {x: 0.5, y: 0.5}
+    spritePadding: 0
+    generateModelPrefab: 1
+    generateAnimationClips: 1
+    addSortingGroup: 1
+    addShadowCasters: 0
+  asepriteImporterSettings:
+    fileImportMode: 1
+    importHiddenLayers: 0
+    layerImportMode: 1
+    defaultPivotSpace: 0
+    defaultPivotAlignment: 7
+    customPivotPosition: {x: 0.5, y: 0.5}
+    spritePadding: 0
+    generateModelPrefab: 1
+    generateAnimationClips: 1
+    addSortingGroup: 1
+    addShadowCasters: 0
+  importFileNodeState: 1
+  platformSettingsDirtyTick: 0
+  textureAssetName: 
+  singleSpriteImportData:
+  - name: 
+    originalName: 
+    pivot: {x: 0, y: 0}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+    spriteID: 
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  animatedSpriteImportData:
+  - name: elmagedefl_Frame_4
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.10204081}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 127
+      width: 57
+      height: 49
+    spriteID: 45d8215faf4f3fb48bfb55db58fd0159
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 127}
+  - name: elmagedefl_Frame_5
+    originalName: 
+    pivot: {x: 0.3846154, y: -0.10204081}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 199
+      y: 127
+      width: 52
+      height: 49
+    spriteID: 774166b8567d7b14fac5d47531130037
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 199, y: 127}
+  - name: elmagedefl_Frame_6
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.10204081}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 69
+      y: 127
+      width: 57
+      height: 49
+    spriteID: 1bfebefa7fbf3d141a1013f5688af23d
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 69, y: 127}
+  - name: elmagedefl_Frame_7
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.10204081}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 134
+      y: 127
+      width: 57
+      height: 49
+    spriteID: d0c47360447f3a24cb8372c140e9cd99
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 134, y: 127}
+  - name: elmagedefl_Frame_8
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.094339624}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 69
+      y: 4
+      width: 57
+      height: 53
+    spriteID: 91ab8e4bfac621f4d9f294766ff0aa32
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 69, y: 4}
+  - name: elmagedefl_Frame_9
+    originalName: 
+    pivot: {x: 0.61538464, y: -0.09803922}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 199
+      y: 66
+      width: 52
+      height: 51
+    spriteID: 44976640f50b19244b50439ea8fbd981
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 199, y: 66}
+  - name: elmagedefl_Frame_10
+    originalName: 
+    pivot: {x: 0.62222224, y: -0.09803922}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 69
+      y: 184
+      width: 45
+      height: 51
+    spriteID: 1aa19a02af020034d89fb283ac8f8446
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 69, y: 184}
+  - name: elmagedefl_Frame_11
+    originalName: 
+    pivot: {x: 0.68085104, y: -0.09803922}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 199
+      y: 4
+      width: 47
+      height: 51
+    spriteID: 2046133575a207147b037b5be3758cb0
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 199, y: 4}
+  - name: elmagedefl_Frame_12
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.094339624}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 134
+      y: 4
+      width: 57
+      height: 53
+    spriteID: db562c313ab2d9445acf0e7884ba672e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 134, y: 4}
+  - name: elmagedefl_Frame_13
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.074074075}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 4
+      width: 57
+      height: 54
+    spriteID: 49369c96e4316414e80bdd1eebad62a8
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 4}
+  - name: elmagedefl_Frame_0
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.094339624}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 66
+      width: 57
+      height: 53
+    spriteID: 4a607d12c9b877a43b0d553683bcaf6f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 66}
+  - name: elmagedefl_Frame_1
+    originalName: 
+    pivot: {x: 0.54385966, y: -0.09615385}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 134
+      y: 66
+      width: 57
+      height: 52
+    spriteID: aeb981f79825dac448457bc62351eae1
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 134, y: 66}
+  - name: elmagedefl_Frame_2
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.094339624}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 69
+      y: 66
+      width: 57
+      height: 53
+    spriteID: c4b40d82522c3d140a4221055f6ee5b3
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 69, y: 66}
+  - name: elmagedefl_Frame_3
+    originalName: 
+    pivot: {x: 0.5614035, y: -0.10204081}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 184
+      width: 57
+      height: 49
+    spriteID: 9fb08b6919db22144b9a117b91f4ae83
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 184}
+  spriteSheetImportData: []
+  asepriteLayers:
+  - layerIndex: 0
+    guid: -1190579572
+    name: elmagedefl
+    layerFlags: 0
+    layerType: 0
+    blendMode: 0
+    cells:
+    - name: elmagedefl_Frame_4
+      frameIndex: 4
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 49
+      spriteId: 45d8215faf4f3fb48bfb55db58fd0159
+    - name: elmagedefl_Frame_5
+      frameIndex: 5
+      cellRect:
+        x: 12
+        y: 5
+        width: 52
+        height: 49
+      spriteId: 774166b8567d7b14fac5d47531130037
+    - name: elmagedefl_Frame_6
+      frameIndex: 6
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 49
+      spriteId: 1bfebefa7fbf3d141a1013f5688af23d
+    - name: elmagedefl_Frame_7
+      frameIndex: 7
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 49
+      spriteId: d0c47360447f3a24cb8372c140e9cd99
+    - name: elmagedefl_Frame_8
+      frameIndex: 8
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 53
+      spriteId: 91ab8e4bfac621f4d9f294766ff0aa32
+    - name: elmagedefl_Frame_9
+      frameIndex: 9
+      cellRect:
+        x: 0
+        y: 5
+        width: 52
+        height: 51
+      spriteId: 44976640f50b19244b50439ea8fbd981
+    - name: elmagedefl_Frame_10
+      frameIndex: 10
+      cellRect:
+        x: 4
+        y: 5
+        width: 45
+        height: 51
+      spriteId: 1aa19a02af020034d89fb283ac8f8446
+    - name: elmagedefl_Frame_11
+      frameIndex: 11
+      cellRect:
+        x: 0
+        y: 5
+        width: 47
+        height: 51
+      spriteId: 2046133575a207147b037b5be3758cb0
+    - name: elmagedefl_Frame_12
+      frameIndex: 12
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 53
+      spriteId: db562c313ab2d9445acf0e7884ba672e
+    - name: elmagedefl_Frame_13
+      frameIndex: 13
+      cellRect:
+        x: 0
+        y: 4
+        width: 57
+        height: 54
+      spriteId: 49369c96e4316414e80bdd1eebad62a8
+    - name: elmagedefl_Frame_0
+      frameIndex: 0
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 53
+      spriteId: 4a607d12c9b877a43b0d553683bcaf6f
+    - name: elmagedefl_Frame_1
+      frameIndex: 1
+      cellRect:
+        x: 1
+        y: 5
+        width: 57
+        height: 52
+      spriteId: aeb981f79825dac448457bc62351eae1
+    - name: elmagedefl_Frame_2
+      frameIndex: 2
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 53
+      spriteId: c4b40d82522c3d140a4221055f6ee5b3
+    - name: elmagedefl_Frame_3
+      frameIndex: 3
+      cellRect:
+        x: 0
+        y: 5
+        width: 57
+        height: 49
+      spriteId: 9fb08b6919db22144b9a117b91f4ae83
+    linkedCells: []
+    parentIndex: -1
+  platformSettings: []
+  secondarySpriteTextures: []
+  spritePackingTag: 
+  canvasSize: {x: 64, y: 64}

@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI survivedText;
     Canvas[] canvases;
     WaveManager waveManager;
+    [SerializeField] AudioSource lostSound;
+    [SerializeField] AudioSource mainMusic;
 
     public void Lost()
     {
@@ -18,6 +20,8 @@ public class GameManager : MonoBehaviour
         {
             canv.gameObject.SetActive(false);
         }
+        mainMusic.Stop();
+        lostSound.Play();
         survivedText.text = "Вы прожили " + waveManager.currentWave.ToString() + " волн";
         LostCanvas.SetActive(true);
 

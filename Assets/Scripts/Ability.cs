@@ -55,6 +55,10 @@ public class Ability : MonoBehaviour
     [SerializeField] public Sprite ElectroImage;
     [SerializeField] public Sprite FireImage;
     [SerializeField] public Sprite WindImage;
+    [SerializeField] public GameObject showDamagePrefab;
+
+    [SerializeField] AudioSource abilitySound;
+
 
     EnemiesManager enemiesManager;
     List<GameObject> DashEnemies;
@@ -253,12 +257,14 @@ public class Ability : MonoBehaviour
     public void SkipTurn()
     {
         State.Instance.IsPlayerTurn = false;
+        abilitySound.Play();
         tilemap.color = UnityEngine.Color.white;
     }
 
     void HandleCooldown()
     {
         Select();
+        abilitySound.Play();
         player.abilityElement = Player.AbilityElement.Default;
         abilityState = AbilityState.Cooldown;
         currentCooldown = player.currentTurn + cooldown;
@@ -320,7 +326,13 @@ public class Ability : MonoBehaviour
             player.currentDices[player.diceElement].SetActive(false);
         }
         player.diceElement = Player.AbilityElement.Default;
-        return CalculateDamage(diceState);
+
+        var calculatedDamage = CalculateDamage(diceState);
+        GameObject canvasDamage = Instantiate(showDamagePrefab, player.transform.position, transform.rotation);
+        DamageShowUI damageShowUI = canvasDamage.GetComponent<DamageShowUI>();
+        damageShowUI.transform.parent = player.transform;
+        damageShowUI.Init(calculatedDamage);
+        return calculatedDamage;
     }
 
 
@@ -347,7 +359,7 @@ public class Ability : MonoBehaviour
                 continue;
 
             float distance = Vector2.Distance(position, enemy.transform.position);
-            Debug.Log(distance);
+            //Debug.Log(distance);
             if (distance <= range - 2 + 0.1 + 0.5)
             {          
                 enemy.TakeDamageWithoutCube(damage, enemyState, player.abilityElement);
@@ -667,12 +679,12 @@ public class Ability : MonoBehaviour
                     if (hit.transform != null)
                     {
                         Activate(hit.transform.gameObject, mouseHit);
-                        Debug.Log(hit.transform.gameObject);
+                        //Debug.Log(hit.transform.gameObject);
                     }
                     else
                     {
                         Activate(tilemap.transform.gameObject, mouseHit);
-                        Debug.Log("Tilemap");
+                        //Debug.Log("Tilemap");
                     }
                 }
             }

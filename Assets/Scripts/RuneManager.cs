@@ -18,6 +18,7 @@ public class RuneManager : MonoBehaviour
     [SerializeField] Player.AbilityElement runeElement;
     [SerializeField] int currentCooldown;
     [SerializeField] RuneState runeState;
+    [SerializeField] AudioSource collectSound;
     Player player;
     public BoxCollider2D boxCollider;
     SpriteRenderer sprite;
@@ -38,6 +39,7 @@ public class RuneManager : MonoBehaviour
         runeState = RuneState.Cooldown;
         sprite.color = new Color(1f, 1f, 1f, 0f);
         transform.position = new Vector2(-10000, -10000);
+        collectSound.Play();
     }
 
     public List<Vector2> GetPointsAroundPlayer(Vector2 playerPosition)

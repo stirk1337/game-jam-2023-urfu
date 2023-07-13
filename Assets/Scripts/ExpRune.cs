@@ -14,8 +14,11 @@ public class ExpRune : MonoBehaviour
     [SerializeField] int abilityRangeUpgradedTimes;
     [SerializeField] int diceUpgradedTimes;
     [SerializeField] int abilityDamageUpdradedTimes;
+
+    
     Ability[] abilities;
     DiceManager diceManager;
+    ExpRuneManager expRuneManager;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -30,10 +33,13 @@ public class ExpRune : MonoBehaviour
     {
         player.health = Mathf.Clamp(player.health + hpValue, -10, player.maxHealth);
         player.exp += expValue;
+        expRuneManager.CollectSound();
+        
 
         if (player.exp >= 10)
         {
             Upgrade();
+            
             player.exp -= 10;
         }
     }
@@ -42,6 +48,7 @@ public class ExpRune : MonoBehaviour
     void Upgrade()
     {
         int random = Random.Range(0, 8);
+        expRuneManager.SoundLevelUp();
         //random = 4;
 
         switch (random)
@@ -148,6 +155,7 @@ public class ExpRune : MonoBehaviour
         player = FindObjectOfType<Player>();
         abilities = FindObjectsOfType<Ability>();
         diceManager = FindObjectOfType<DiceManager>();
+        expRuneManager = FindObjectOfType<ExpRuneManager>();
     }
 
     // Update is called once per frame

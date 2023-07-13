@@ -50,6 +50,8 @@ public class Player : MonoBehaviour
     [SerializeField] GameObject windCubeImage;
     public Dictionary<AbilityElement, GameObject> currentDices;
 
+    [SerializeField] AudioSource takeDamageSound;
+
     GameManager gameManager;
 
 
@@ -71,6 +73,7 @@ public class Player : MonoBehaviour
     {
         health -= Mathf.Clamp(tuple.Item1 - shield, 0, 100000);
         //Debug.Log(tuple.Item1 + tuple.Item2.ToString());
+        takeDamageSound.Play();
         switch (tuple.Item2)
         {
             case DiceManager.DiceState.Electro:

@@ -52,11 +52,14 @@ public class Enemy : MonoBehaviour
     [SerializeField] int abilityCooldown;
     [SerializeField] public ElementState resist;
     [SerializeField] public int maxCharge;
+    [SerializeField] public GameObject showDamagePrefab;
 
 
     [SerializeField] public Sprite resistSprite;
     [SerializeField] public Sprite rangeSprite;
     [SerializeField] public Sprite abilityDamageSprite;
+
+    [SerializeField] AudioSource abilitySound;
 
     Player player;
     DiceManager diceManager;
@@ -238,7 +241,13 @@ public class Enemy : MonoBehaviour
                 diceState = diceManager.windDice[random];
                 break;
         }
-        return CalculateDamage(diceState);
+
+        var calculatedDamage = CalculateDamage(diceState);
+        GameObject canvasDamage = Instantiate(showDamagePrefab, transform.position, transform.rotation);
+        DamageShowUI damageShowUI = canvasDamage.GetComponent<DamageShowUI>();
+        damageShowUI.transform.parent = transform;
+        damageShowUI.Init(calculatedDamage);
+        return calculatedDamage;
     }
 
 
@@ -323,7 +332,6 @@ public class Enemy : MonoBehaviour
                 {
                     if (isCharging == 1)
                     {
-                        // animator.SetTrigger("AttackAbility");
                         currentAbilityCooldown = abilityCooldown;
                         if (inRangeStrogo(target, 3))
                         {
@@ -332,6 +340,7 @@ public class Enemy : MonoBehaviour
                         }
                         isCharging = 0;
                         animator.SetBool("Charging", false);
+                        abilitySound.Play();
                     }
                     else if (inRange(target, range))
                     {
@@ -371,17 +380,19 @@ public class Enemy : MonoBehaviour
                 if (currentAbilityCooldown <= 0)
                 {
                     if (isCharging == 1)
-                    {
-                        // animator.SetTrigger("AttackAbility");
+                    {                     
                         lastPos = targetPos;
                         targetPos = fireKnightTarget;
                         currentAbilityCooldown = abilityCooldown;
+                        animator.SetTrigger("Dash");
                         if (inRangeForward(target, 3))
                         {
 
                             AbilityAttack(target, ElementState.Fire);
                         }
                         isCharging = 0;
+                        animator.SetBool("Charging", false);
+                        abilitySound.Play();
                     }
                     else if (inRange(target, range))
                     {
@@ -392,7 +403,7 @@ public class Enemy : MonoBehaviour
                     {
                         isCharging = 1;
                         fireKnightTarget = target.position;
-                        //animator.SetTrigger("ChargeAbility");
+                        animator.SetBool("Charging", true);
                     }
                     else
                     {
@@ -425,6 +436,8 @@ public class Enemy : MonoBehaviour
                         }
                         isCharging = 0;
                         currentAbilityCooldown = abilityCooldown;
+                        animator.SetBool("Charging", false);
+                        abilitySound.Play();
                     }
                     else if (isCharging == 1)
                         isCharging = 2;
@@ -450,7 +463,7 @@ public class Enemy : MonoBehaviour
                                 new Vector2(player.transform.position.x + 1, player.transform.position.y + 1),
                             };
                             isCharging = 1;
-                            // animator.SetTrigger("CharingAbility");
+                            animator.SetBool("Charging", true);
                         }
                         else
                         {
@@ -585,7 +598,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamageWithoutCube(int dmg, ElementState element, Player.AbilityElement abilityElement)
     {
 
-        Debug.Log((ElementState)abilityElement);
+        //Debug.Log((ElementState)abilityElement);
         if ((ElementState)abilityElement == resist && abilityElement != Player.AbilityElement.Default)
         {
             dmg /= 2;
