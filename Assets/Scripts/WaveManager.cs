@@ -43,7 +43,7 @@ public class WaveManager : MonoBehaviour
         switch (currentWave)
         {
             case 1:
-                SetEnemiesCount(1, 1, 1, 1, 1);
+                SetEnemiesCount(4, 0, 0, 0, 0);
                 break;
             case 2:
                 SetEnemiesCount(3, 2, 0, 0, 0);
