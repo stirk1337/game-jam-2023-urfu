@@ -191,6 +191,23 @@ public class Enemy : MonoBehaviour
 
         Player player = target.gameObject.GetComponent<Player>();
         animator.SetTrigger("Attack");
+
+        if (player.transform.position.x - transform.position.x > 0)
+        {
+            if (spriteRenderer.flipX)
+            {
+                spriteRenderer.flipX = false;
+                spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x + 0.1f, spriteRenderer.transform.position.y);
+            }
+        }
+        else
+        {
+            if (!spriteRenderer.flipX)
+            {
+                spriteRenderer.flipX = true;
+                spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x - 0.1f, spriteRenderer.transform.position.y);
+            }
+        }
         player.TakeDamageWithCube(ThrowDice());
     }
 
@@ -303,7 +320,7 @@ public class Enemy : MonoBehaviour
         {
             if (enemyType == EnemyType.Knight)
             {
-                KnightTurnElectroState(target, 0.45f);
+                StartCoroutine(KnightTurnElectroState(target, 0.45f));
             }
             else
             {

@@ -6308,6 +6308,8 @@ MonoBehaviour:
   shieldText: {fileID: 522429605}
   damageText: {fileID: 630805430}
   rangeText: {fileID: 806855577}
+  needToDeleteShieldFromZZZ: 0
+  lastAttackWasMiss: 0
   spriteExp:
   - {fileID: 85411265, guid: 112f30b3a9bebad46a73665cf2c406ec, type: 3}
   - {fileID: -686769595, guid: 112f30b3a9bebad46a73665cf2c406ec, type: 3}
@@ -7658,9 +7660,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c942dd89c687e2e4290730a936e522fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 5
+  damage: 10
   range: 3
-  cooldown: 30
+  cooldown: 10
   currentCooldown: 0
   abilityType: 3
   abilityState: 0
@@ -9012,7 +9014,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   range: 3
-  cooldown: 20
+  cooldown: 15
   currentCooldown: 0
   abilityType: 2
   abilityState: 0
@@ -14119,7 +14121,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   range: 2
-  cooldown: 30
+  cooldown: 15
   currentCooldown: 0
   abilityType: 1
   abilityState: 0

@@ -31,6 +31,8 @@ public class Player : MonoBehaviour
     [SerializeField] TextMeshProUGUI shieldText;
     [SerializeField] TextMeshProUGUI damageText;
     [SerializeField] TextMeshProUGUI rangeText;
+    [SerializeField] public bool needToDeleteShieldFromZZZ;
+    [SerializeField] public bool lastAttackWasMiss;
 
 
 

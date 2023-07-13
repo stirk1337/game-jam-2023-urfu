@@ -237,6 +237,12 @@ public class Ability : MonoBehaviour
         if (!State.Instance.IsPlayerTurn)
             return;
 
+        playerMove.startTouchPostitionX = 0f;
+        playerMove.startTouchPostitionY = 0f;
+        playerMove.endTouchPositionX = 0f;
+        playerMove.endTouchPositionY = 0f;
+
+
         abilitiesUIManager.TurnInteractable(buttonGameObject);
         StartCoroutine(InSelectTurner(0.1f));
         switch (abilityState)
@@ -255,6 +261,13 @@ public class Ability : MonoBehaviour
     }
 
     public void SkipTurn()
+    {
+        NextTurn();
+        player.shield += 5;
+        player.needToDeleteShieldFromZZZ = true;
+    }
+
+    public void NextTurn()
     {
         State.Instance.IsPlayerTurn = false;
         abilitySound.Play();
@@ -304,12 +317,33 @@ public class Ability : MonoBehaviour
 
     Tuple<int, DiceManager.DiceState> ThrowDice()
     {
-        int random = UnityEngine.Random.Range(0, 5);
+        int random = UnityEngine.Random.Range(0, 6);
         DiceManager.DiceState diceState = DiceManager.DiceState.Hit;
         switch (player.diceElement)
         {
             case Player.AbilityElement.Default:
                 diceState = diceManager.playerDice[random];
+                if (diceState == DiceManager.DiceState.Miss)
+                {
+                    if (player.lastAttackWasMiss)
+                    {
+                        player.lastAttackWasMiss = false;
+                        diceState = DiceManager.DiceState.Hit;
+                    }
+                    else
+                    {
+                        int random2 = UnityEngine.Random.Range(0, 2);
+                        if (random2 == 0)
+                        {
+                            diceState = DiceManager.DiceState.Hit;
+                        }
+                        else
+                        {
+                            player.lastAttackWasMiss = true;
+                        }
+                    }
+
+                }
                 break;
             case Player.AbilityElement.Fire:
                 diceState = diceManager.fireDice[random];
@@ -435,11 +469,7 @@ public class Ability : MonoBehaviour
         if (State.Instance.IsPlayerTurn)
         {
             switch (abilityType)
-            {
-                case AbilityType.Skip:
-                    SkipTurn();
-                    break;
-                
+            {           
                 case AbilityType.Melee:
                     float distance = ManhattanDistance(player.transform.position, gameObj.transform.position);
                     //Debug.Log(distance);
@@ -448,10 +478,26 @@ public class Ability : MonoBehaviour
                     {
                         Select();
                         animator.SetTrigger("Attack");
+                        if (gameObj.transform.position.x - player.transform.position.x > 0)
+                        {
+                            if (playerMove.spriteRenderer.flipX)
+                            {
+                                playerMove.spriteRenderer.flipX = false;
+                                playerMove.spriteRenderer.transform.position = new Vector2(playerMove.spriteRenderer.transform.position.x + 0.32f, playerMove.spriteRenderer.transform.position.y);
+                            }
+                        }
+                        else
+                        {
+                            if (!playerMove.spriteRenderer.flipX)
+                            {
+                                playerMove.spriteRenderer.flipX = true;
+                                playerMove.spriteRenderer.transform.position = new Vector2(playerMove.spriteRenderer.transform.position.x - 0.32f, playerMove.spriteRenderer.transform.position.y);
+                            }
+                        }
                         tilemap.color = UnityEngine.Color.white;
                         Enemy enemy = gameObj.GetComponent<Enemy>();
                         enemy.TakeDamageWithCube(ThrowDice());
-                        SkipTurn();
+                        NextTurn();
                     } 
                     break;
 
@@ -470,7 +516,7 @@ public class Ability : MonoBehaviour
                     {
                         if (gameObj.tag == "Player" || (gameObj.tag == "Tile" || gameObj.tag == "Rune"))
                         {
-                            SplashAttack(5, player.transform.position, Enemy.ElementState.Default);
+                            SplashAttack(10, player.transform.position, Enemy.ElementState.Default);
                             animator.SetTrigger("Splash");
                             HandleCooldown();
                         }

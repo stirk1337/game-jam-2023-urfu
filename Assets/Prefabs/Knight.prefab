@@ -284,8 +284,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d548c52a7f0c51442bb1b353c303747a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 50
-  shield: 0
+  health: 20
+  shield: 20
   damage: 10
   abilityDamage: 0
   range: 1

@@ -22,12 +22,33 @@ public class WaveManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI waveText;
     [SerializeField] TextMeshProUGUI enemiesCountText;
     int waveEnemiesCount;
+    Ability[] abilities;
+    Player player;
+    [SerializeField] int INFswordSpawnCount;
+    [SerializeField] int INFmageSpawnCount;
+    [SerializeField] int INFknightSpawnCount;
+    [SerializeField] int INFelectroMageSpawnCount;
+    [SerializeField] int INFfireSwordSpawnCount;
+    List<int> spawnCount;
 
     void Start()
     {
         enemiesManager = FindObjectOfType<EnemiesManager>();
+        abilities = FindObjectsOfType<Ability>();
+        player = FindObjectOfType<Player>();
+        spawnCount = new List<int>() { 0, 0, 1, 2, 2 };
         NextWave();
     }
+
+    void AbilitiesCooldown()
+    {
+        foreach (Ability ability in abilities)
+        {
+            ability.currentCooldown = player.currentTurn;
+            ability.abilityState = Ability.AbilityState.Ready;
+        }
+    }
+
 
     void SetEnemiesCount(int sword, int mage, int knight, int electroMage, int fireSword)
     {
@@ -43,44 +64,57 @@ public class WaveManager : MonoBehaviour
         switch (currentWave)
         {
             case 1:
-                SetEnemiesCount(4, 0, 0, 0, 0);
+                SetEnemiesCount(2, 0, 0, 0, 0);
                 break;
             case 2:
-                SetEnemiesCount(3, 2, 0, 0, 0);
+                SetEnemiesCount(1, 1, 0, 0, 0);
                 break;
             case 3:
-                SetEnemiesCount(4, 0, 1, 0, 0);
+                SetEnemiesCount(0, 2, 0, 0, 0);
                 break;
             case 4:
-                SetEnemiesCount(2, 2, 1, 0, 0);
+                SetEnemiesCount(4, 0, 0, 0, 0);
                 break;
             case 5:
-                SetEnemiesCount(1, 2, 0, 0, 1);
+                SetEnemiesCount(3, 2, 0, 0, 0);
                 break;
             case 6:
-                SetEnemiesCount(1, 0, 1, 0, 1);
+                SetEnemiesCount(4, 0, 1, 0, 0);
                 break;
             case 7:
-                SetEnemiesCount(0, 2, 1, 0, 1);
+                SetEnemiesCount(2, 2, 1, 0, 0);
                 break;
             case 8:
-                SetEnemiesCount(2, 2, 0, 1, 1);
+                SetEnemiesCount(1, 2, 0, 0, 1);
                 break;
             case 9:
-                SetEnemiesCount(0, 0, 1, 1, 1);
+                SetEnemiesCount(1, 0, 1, 0, 1);
                 break;
             case 10:
+                SetEnemiesCount(0, 2, 1, 0, 1);
+                break;
+            case 11:
+                SetEnemiesCount(2, 2, 0, 1, 1);
+                break;
+            case 12:
+                SetEnemiesCount(0, 0, 1, 1, 1);
+                break;
+            case 13:
                 SetEnemiesCount(0, 1, 1, 1, 2);
                 break;
-            default:
-                SetEnemiesCount(0, 0, 1, 2, 2);
+            default: 
+                int random = Random.Range(0, 6);
+                spawnCount[random] += 1;
+                SetEnemiesCount(spawnCount[0], spawnCount[1], spawnCount[2], spawnCount[3], spawnCount[4]);
                 break;
         }
+        
     }
 
     void NextWave()
     {
         currentWave += 1;
+        AbilitiesCooldown();
         CalculateEnemiesCountOnWave();
         for (int i = 0; i < swordSpawnCount; i++)
         {

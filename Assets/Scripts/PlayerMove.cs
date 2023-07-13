@@ -11,15 +11,15 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] float speedField;
     [SerializeField] float SwipeDeadZone;
     [SerializeField] Animator animator;
-    [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] public SpriteRenderer spriteRenderer;
     [SerializeField] float cooldown;
     [SerializeField] public bool InSelect;
     [SerializeField] Vector2 mapSize;
     [SerializeField] public bool onDash;
-    float startTouchPostitionX;
-    float endTouchPositionX;
-    float startTouchPostitionY;
-    float endTouchPositionY;
+    public float startTouchPostitionX;
+    public float endTouchPositionX;
+    public float startTouchPostitionY;
+    public float endTouchPositionY;
     bool onCooldown;
     public Vector2 lastPos;
     public Vector2 targetPos;
@@ -106,7 +106,7 @@ public class PlayerMove : MonoBehaviour
                         if (!spriteRenderer.flipX)
                         {
                             spriteRenderer.flipX = true;
-                            spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x - 0.2f, spriteRenderer.transform.position.y);
+                            spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x - 0.32f, spriteRenderer.transform.position.y);
                         }
                     }
 
@@ -116,7 +116,7 @@ public class PlayerMove : MonoBehaviour
                         if (spriteRenderer.flipX)
                         {
                             spriteRenderer.flipX = false;
-                            spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x + 0.2f, spriteRenderer.transform.position.y);
+                            spriteRenderer.transform.position = new Vector2(spriteRenderer.transform.position.x + 0.32f, spriteRenderer.transform.position.y);
                         }
                     }
                 }

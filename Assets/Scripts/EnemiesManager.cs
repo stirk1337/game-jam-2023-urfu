@@ -126,12 +126,23 @@ public class EnemiesManager : MonoBehaviour
 
             State.Instance.IsPlayerTurn = true;
             onCooldown = false;
+            if (player.needToDeleteShieldFromZZZ)
+            {
+                player.shield -= 5;
+                player.needToDeleteShieldFromZZZ = false;
+            }
+        
         }
         else
         {
             State.Instance.FreeMove = false;
             State.Instance.IsPlayerTurn = true;
             onCooldown = false;
+            if (player.needToDeleteShieldFromZZZ)
+            {
+                player.shield -= 5;
+                player.needToDeleteShieldFromZZZ = false;
+            }
         }
         waveManager.UpdateVisual();
     }
