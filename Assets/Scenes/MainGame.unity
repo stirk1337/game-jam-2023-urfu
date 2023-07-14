@@ -5190,7 +5190,7 @@ Camera:
   far clip plane: 100
   field of view: 32.9
   orthographic: 1
-  orthographic size: 3
+  orthographic size: 4.25
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -11683,6 +11683,10 @@ MonoBehaviour:
   InSelect: 0
   mapSize: {x: 12, y: 12}
   onDash: 0
+  startTouchPostitionX: 0
+  endTouchPositionX: 0
+  startTouchPostitionY: 0
+  endTouchPositionY: 0
   lastPos: {x: 0.5, y: 0.5}
   targetPos: {x: 0.5, y: -0.5}
   speed: 1
@@ -13913,6 +13917,11 @@ MonoBehaviour:
   fireSwordSpawnCount: 1
   waveText: {fileID: 1472857508}
   enemiesCountText: {fileID: 635277318}
+  INFswordSpawnCount: 0
+  INFmageSpawnCount: 0
+  INFknightSpawnCount: 0
+  INFelectroMageSpawnCount: 0
+  INFfireSwordSpawnCount: 0
 --- !u!1 &1991279685
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,7 @@ public class State : MonoBehaviour
     public static State Instance;
     [SerializeField] public bool IsPlayerTurn;
     [SerializeField] public bool FreeMove;
-
+    [SerializeField] public bool Sound;
     private void Awake()
     {
         if (Instance == null)

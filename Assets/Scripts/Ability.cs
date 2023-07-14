@@ -437,6 +437,13 @@ public class Ability : MonoBehaviour
         DashEnemies.Clear();
         abilityCollider.enabled = false;
         boxCollider.enabled = true;
+        playerMove.onDash = false;
+    }
+
+    IEnumerator StartDash(float time)
+    {
+        yield return new WaitForSeconds(time);
+        playerMove.onDash = false;
     }
 
     IEnumerator ElectroDash(float time)
@@ -460,6 +467,7 @@ public class Ability : MonoBehaviour
         abilityCollider.enabled = false;
         abilityCollider.size = new Vector2(0.9f, 0.9f);
         boxCollider.enabled = true;
+        playerMove.onDash = false;
 
     }
 
@@ -478,22 +486,22 @@ public class Ability : MonoBehaviour
                     {
                         Select();
                         animator.SetTrigger("Attack");
-                        if (gameObj.transform.position.x - player.transform.position.x > 0)
-                        {
-                            if (playerMove.spriteRenderer.flipX)
-                            {
-                                playerMove.spriteRenderer.flipX = false;
-                                playerMove.spriteRenderer.transform.position = new Vector2(playerMove.spriteRenderer.transform.position.x + 0.32f, playerMove.spriteRenderer.transform.position.y);
-                            }
-                        }
-                        else
-                        {
-                            if (!playerMove.spriteRenderer.flipX)
-                            {
-                                playerMove.spriteRenderer.flipX = true;
-                                playerMove.spriteRenderer.transform.position = new Vector2(playerMove.spriteRenderer.transform.position.x - 0.32f, playerMove.spriteRenderer.transform.position.y);
-                            }
-                        }
+                        //if (gameObj.transform.position.x - player.transform.position.x > 0)
+                        //{
+                        //    if (playerMove.spriteRenderer.flipX)
+                        //    {
+                        //        playerMove.spriteRenderer.flipX = false;
+                        //        //playerMove.spriteRenderer.transform.position = new Vector2(playerMove.spriteRenderer.transform.position.x + 0.32f, playerMove.spriteRenderer.transform.position.y);
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    if (!playerMove.spriteRenderer.flipX)
+                        //    {
+                        //        playerMove.spriteRenderer.flipX = true;
+                        //        //playerMove.spriteRenderer.transform.position = new Vector2(playerMove.spriteRenderer.transform.position.x - 0.32f, playerMove.spriteRenderer.transform.position.y);
+                        //    }
+                        //}
                         tilemap.color = UnityEngine.Color.white;
                         Enemy enemy = gameObj.GetComponent<Enemy>();
                         enemy.TakeDamageWithCube(ThrowDice());
@@ -578,8 +586,10 @@ public class Ability : MonoBehaviour
                             HandleCooldown();
                             playerMove.lastPos = player.transform.position;
                             playerMove.speed = 10;
+                            playerMove.onDash = true;
                             animator.SetTrigger("Dash");
                             playerMove.targetPos = cell;
+                            StartCoroutine(StartDash(0.5f));
                         }
                     }
 
@@ -592,6 +602,7 @@ public class Ability : MonoBehaviour
                         {
                             HandleCooldown();
                             animator.SetTrigger("Dash");
+                            playerMove.onDash = true;
                             abilityCollider.enabled = true;
                             playerMove.lastPos = player.transform.position;
                             playerMove.speed = 20;
@@ -639,6 +650,7 @@ public class Ability : MonoBehaviour
                             }
                             playerMove.lastPos = player.transform.position;
                             playerMove.speed = 20;
+                            playerMove.onDash = true;
                             playerMove.targetPos = cell;
                             StartCoroutine(WindDash(0.5f));
                         }

@@ -350,7 +350,7 @@ public class Enemy : MonoBehaviour
                     if (isCharging == 1)
                     {
                         currentAbilityCooldown = abilityCooldown;
-                        if (inRangeStrogo(target, 3))
+                        if (inRangeForward(target, 3))
                         {
                             AbilityAttack(target, ElementState.Default);
                             
