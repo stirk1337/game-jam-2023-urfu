@@ -30,6 +30,7 @@ public class WaveManager : MonoBehaviour
     [SerializeField] int INFelectroMageSpawnCount;
     [SerializeField] int INFfireSwordSpawnCount;
     List<int> spawnCount;
+    Localisation localisation;
 
     void Start()
     {
@@ -37,7 +38,9 @@ public class WaveManager : MonoBehaviour
         abilities = FindObjectsOfType<Ability>();
         player = FindObjectOfType<Player>();
         spawnCount = new List<int>() { 0, 0, 1, 2, 2 };
+        localisation = FindObjectOfType<Localisation>();
         NextWave();
+
     }
 
     void AbilitiesCooldown()
@@ -148,7 +151,7 @@ public class WaveManager : MonoBehaviour
 
     public void UpdateVisual()
     {
-        waveText.text = currentWave.ToString() + " Волна";
+        waveText.text = currentWave.ToString() + " " + localisation.GetTranslate("Волна");
         enemiesCountText.text = (waveEnemiesCount - enemiesManager.enemies.Count).ToString() + "/" + waveEnemiesCount.ToString();
     }
 

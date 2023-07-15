@@ -262,9 +262,12 @@ public class Ability : MonoBehaviour
 
     public void SkipTurn()
     {
-        NextTurn();
-        player.shield += 5;
-        player.needToDeleteShieldFromZZZ = true;
+        if (State.Instance.IsPlayerTurn)
+        {
+            NextTurn();
+            player.shield += 5;
+            player.needToDeleteShieldFromZZZ = true;
+        }
     }
 
     public void NextTurn()

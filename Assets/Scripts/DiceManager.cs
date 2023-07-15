@@ -40,6 +40,7 @@ public class DiceManager : MonoBehaviour
     public List<DiceState> windDice;
 
     [SerializeField] Canvas enemyCanvas;
+    Localisation localisation;
 
     public void SelectDice(string diceElement)
     {
@@ -55,6 +56,7 @@ public class DiceManager : MonoBehaviour
 
     void Start()
     {
+        localisation = FindObjectOfType<Localisation>();
         defaultDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Miss, DiceState.Miss };
         playerDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Miss, DiceState.Miss };
         fireDice = new List<DiceState>() { DiceState.Hit, DiceState.Hit, DiceState.Hit, DiceState.Crit, DiceState.Crit, DiceState.Miss };
@@ -69,7 +71,7 @@ public class DiceManager : MonoBehaviour
         switch (player.diceElement)
         {
             case Player.AbilityElement.Default:
-                cubeText.text = "Обычный кубик";
+                cubeText.text = localisation.GetTranslate("Обычный кубик");
                 var countOfMisses = playerDice.Where(x => x == DiceState.Miss);
                 if (countOfMisses.Count() == 2)
                 {
@@ -85,15 +87,15 @@ public class DiceManager : MonoBehaviour
                 }
                 break;
             case Player.AbilityElement.Fire:
-                cubeText.text = "Огненный кубик";
+                cubeText.text = localisation.GetTranslate("Огненный кубик");
                 diceRange.sprite = fireDiceRange;
                 break;
             case Player.AbilityElement.Electro:
-                cubeText.text = "Электрический кубик";
+                cubeText.text = localisation.GetTranslate("Электрический кубик"); ;
                 diceRange.sprite = electroDiceRange;
                 break;
             case Player.AbilityElement.Wind:
-                cubeText.text = "Ветряной кубик";
+                cubeText.text = localisation.GetTranslate("Ветряной кубик");
                 diceRange.sprite = windDiceRange;
                 break;
             

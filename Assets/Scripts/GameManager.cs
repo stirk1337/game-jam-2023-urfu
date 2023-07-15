@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,6 +14,11 @@ public class GameManager : MonoBehaviour
     WaveManager waveManager;
     [SerializeField] AudioSource lostSound;
     [SerializeField] AudioSource mainMusic;
+    [SerializeField] GameObject learnToPlayCanvas;
+    Localisation localisation;
+
+    [DllImport("__Internal")]
+    private static extern void ShowAdv();
 
     public void Lost()
     {
@@ -22,7 +28,7 @@ public class GameManager : MonoBehaviour
         }
         mainMusic.Stop();
         lostSound.Play();
-        survivedText.text = "Вы прожили " + waveManager.currentWave.ToString() + " волн";
+        survivedText.text = localisation.GetTranslate("Вы прожили волн: ") + waveManager.currentWave.ToString();
         LostCanvas.SetActive(true);
 
     }
@@ -35,6 +41,12 @@ public class GameManager : MonoBehaviour
     public void Play()
     {
         SceneManager.LoadScene(1);
+        #if UNITY_EDITOR
+            //Debug.Log("Unity Editor");
+        #else
+            ShowAdv();
+        #endif
+
     }
 
     public void MainMenu()
@@ -46,7 +58,14 @@ public class GameManager : MonoBehaviour
     {
         canvases = FindObjectsOfType<Canvas>();
         waveManager = FindObjectOfType<WaveManager>();
+        localisation = FindObjectOfType<Localisation>();
+        
 
+    }
+
+    public void LearnToPlayCanvas()
+    {
+        learnToPlayCanvas.SetActive(!learnToPlayCanvas.active);
     }
 
     // Update is called once per frame

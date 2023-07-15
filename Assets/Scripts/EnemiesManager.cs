@@ -42,6 +42,7 @@ public class EnemiesManager : MonoBehaviour
     bool onCooldown;
     Player player;
     Enemy lastPickedEnemy;
+    Localisation localisation;
 
 
     void Start()
@@ -51,6 +52,7 @@ public class EnemiesManager : MonoBehaviour
         waveManager = FindObjectOfType<WaveManager>();
         runeManager = FindObjectOfType<RuneManager>();
         expRuneManager = FindObjectOfType<ExpRuneManager>();
+        localisation = FindObjectOfType<Localisation>();
     }
 
     Vector2 GetRandomSpawnPoint()
@@ -163,7 +165,7 @@ public class EnemiesManager : MonoBehaviour
         switch (lastPickedEnemy.enemyType)
         {
             case EnemyType.Sword:
-                nameText.text = "Мечник";
+                nameText.text = localisation.GetTranslate("Мечник");
                 resistSprite.gameObject.SetActive(false);
                 sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
                 abilityText.SetActive(false);
@@ -175,7 +177,7 @@ public class EnemiesManager : MonoBehaviour
                 abilityDamageText.gameObject.SetActive(false);
                 break;
             case EnemyType.Mage:
-                nameText.text = "Маг";
+                nameText.text = localisation.GetTranslate("Маг");
                 resistSprite.gameObject.SetActive(false);
                 sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
                 abilityText.SetActive(true);
@@ -190,7 +192,7 @@ public class EnemiesManager : MonoBehaviour
                 abilityDamageText.gameObject.SetActive(true);
                 break;
             case EnemyType.Knight:
-                nameText.text = "Рыцарь";
+                nameText.text = localisation.GetTranslate("Рыцарь");
                 resistSprite.gameObject.SetActive(false);
                 sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
                 abilityText.SetActive(false);
@@ -202,7 +204,7 @@ public class EnemiesManager : MonoBehaviour
                 abilityDamageText.gameObject.SetActive(false);
                 break;
             case EnemyType.FireKnight:
-                nameText.text = "Огненный мечник";
+                nameText.text = localisation.GetTranslate("Огненный мечник");
                 resistSprite.sprite = lastPickedEnemy.resistSprite;
                 resistSprite.gameObject.SetActive(true);
                 sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
@@ -219,7 +221,7 @@ public class EnemiesManager : MonoBehaviour
                 abilityDamageText.gameObject.SetActive(true);
                 break;
             case EnemyType.ElectroMage:
-                nameText.text = "Маг молнии";
+                nameText.text = localisation.GetTranslate("Маг молнии");
                 resistSprite.sprite = lastPickedEnemy.resistSprite;
                 resistSprite.gameObject.SetActive(true);
                 sprite.sprite = lastPickedEnemy.GetComponentInChildren<SpriteRenderer>().sprite;
